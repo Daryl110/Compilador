@@ -1,0 +1,5 @@
+{
+  "host" : "localhost",
+  "port" : 5000,
+  "urlAPI" : "analizador_lexico/api/v1/"
+}

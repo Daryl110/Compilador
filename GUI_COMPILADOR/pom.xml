@@ -6,17 +6,14 @@
         <artifactId>COMPILADOR_SOLAR</artifactId>
         <version>1.0.0</version>
     </parent>
-    <artifactId>ANALIZADOR_SINTACTICO</artifactId>
+    <artifactId>GUI_COMPILADOR</artifactId>
     <packaging>jar</packaging>
+    
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>ANALIZADOR_LEXICO</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>rsyntaxtextarea</artifactId>
+            <version>3.0.4</version>
         </dependency>
     </dependencies>
-    <properties>
-        <maven.compiler.source>13</maven.compiler.source>
-        <maven.compiler.target>13</maven.compiler.target>
-    </properties>
 </project>

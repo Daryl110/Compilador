@@ -5,11 +5,11 @@
  */
 package eam.analizador_sintactico.Models.Statements;
 
+import eam.analizador_lexico.Models.Lexeme;
+import eam.analizador_lexico.Models.Statement;
+import eam.analizador_lexico.Models.TokensFlow;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
-import eam.analizador_sintactico.Models.Lexeme;
-import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
-import eam.analizador_sintactico.Models.TokensFlow;
 
 /**
  *

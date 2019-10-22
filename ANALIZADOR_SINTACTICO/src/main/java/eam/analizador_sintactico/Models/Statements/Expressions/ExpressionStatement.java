@@ -5,9 +5,9 @@
  */
 package eam.analizador_sintactico.Models.Statements.Expressions;
 
-import eam.analizador_sintactico.Models.Lexeme;
-import eam.analizador_sintactico.Models.Statements.Structure.Statement;
-import eam.analizador_sintactico.Models.TokensFlow;
+import eam.analizador_lexico.Models.Lexeme;
+import eam.analizador_lexico.Models.Statement;
+import eam.analizador_lexico.Models.TokensFlow;
 
 /**
  *

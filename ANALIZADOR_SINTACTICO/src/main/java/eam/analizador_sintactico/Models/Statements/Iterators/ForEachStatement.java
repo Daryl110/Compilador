@@ -5,14 +5,14 @@
  */
 package eam.analizador_sintactico.Models.Statements.Iterators;
 
+import eam.analizador_lexico.Models.Lexeme;
+import eam.analizador_lexico.Models.LexemeTypes;
+import eam.analizador_lexico.Models.Statement;
+import eam.analizador_lexico.Models.TokensFlow;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
-import eam.analizador_sintactico.Models.Lexeme;
-import eam.analizador_sintactico.Models.LexemeTypes;
 import eam.analizador_sintactico.Models.Statements.BlockStatement;
 import eam.analizador_sintactico.Models.Statements.Others.ReturnStatement;
-import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
-import eam.analizador_sintactico.Models.TokensFlow;
 
 /**
  *

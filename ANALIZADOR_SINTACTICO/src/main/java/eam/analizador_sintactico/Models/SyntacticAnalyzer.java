@@ -5,8 +5,10 @@
  */
 package eam.analizador_sintactico.Models;
 
+import eam.analizador_lexico.Models.Lexeme;
+import eam.analizador_lexico.Models.Statement;
+import eam.analizador_lexico.Models.TokensFlow;
 import eam.analizador_sintactico.Models.Statements.CompilationUnit;
-import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import java.util.ArrayList;
 
 /**

@@ -6,10 +6,14 @@
 package eam.gui_compilador.Views;
 
 import eam.analizador_lexico.Controllers.LexicalAnalyzerController;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
@@ -19,7 +23,7 @@ import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
  * @author daryl
  */
 public class FrmMain extends javax.swing.JFrame {
-    
+
     private final LexicalAnalyzerController lexAnalyzerController;
 
     /**
@@ -27,7 +31,7 @@ public class FrmMain extends javax.swing.JFrame {
      */
     public FrmMain() {
         initComponents();
-        
+
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
         atmf.putMapping("text/solar", "eam.gui_compilador.Models.SolarTokenMaker");
         this.txtCodeEditor.setSyntaxEditingStyle("text/solar");
@@ -186,7 +190,7 @@ public class FrmMain extends javax.swing.JFrame {
         filechooser.setFileFilter(new FileNameExtensionFilter("solar files (.sol)", "sol"));
         int valueSelection = filechooser.showOpenDialog(this);
         Scanner input = null;
-        
+
         if (valueSelection == JFileChooser.APPROVE_OPTION) {
             String fileRoute = filechooser.getSelectedFile().getAbsolutePath();
             try {
@@ -206,7 +210,37 @@ public class FrmMain extends javax.swing.JFrame {
     }//GEN-LAST:event_btnOpenFileActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        // TODO add your handling code here:
+        JFileChooser filechooser = new JFileChooser(".");
+        filechooser.setFileFilter(new FileNameExtensionFilter("solar files (.sol)", "sol"));
+        int valueSelection = filechooser.showOpenDialog(this);
+
+        if (valueSelection == JFileChooser.APPROVE_OPTION) {
+            String fileRoute = filechooser.getSelectedFile().getAbsolutePath();
+            FileWriter flwriter = null;
+            try {
+                //crea el flujo para escribir en el archivo
+                flwriter = new FileWriter(fileRoute);
+                
+                flwriter.write(this.txtCodeEditor.getText());
+                
+                //crea un buffer o flujo intermedio antes de escribir directamente en el archivo
+                BufferedWriter bfwriter = new BufferedWriter(flwriter);
+                //cierra el buffer intermedio
+                bfwriter.close();
+                JOptionPane.showMessageDialog(this, "Se ha guardado la información correctamente");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (flwriter != null) {
+                    try {//cierra el flujo principal
+                        flwriter.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalyzeActionPerformed

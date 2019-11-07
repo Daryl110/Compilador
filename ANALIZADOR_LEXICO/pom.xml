@@ -13,6 +13,14 @@
         <maven.compiler.target>13</maven.compiler.target>
     </properties>
     
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Daryl110 Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/Daryl110/Compilador</url>
+        </repository>
+    </distributionManagement>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>

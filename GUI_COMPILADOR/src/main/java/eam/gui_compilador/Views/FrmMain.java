@@ -5,6 +5,12 @@
  */
 package eam.gui_compilador.Views;
 
+import eam.analizador_lexico.Controllers.LexicalAnalyzerController;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 
@@ -13,17 +19,20 @@ import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
  * @author daryl
  */
 public class FrmMain extends javax.swing.JFrame {
+    
+    private final LexicalAnalyzerController lexAnalyzerController;
 
     /**
      * Creates new form FrmMain
      */
     public FrmMain() {
         initComponents();
-
+        
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
         atmf.putMapping("text/solar", "eam.gui_compilador.Models.SolarTokenMaker");
         this.txtCodeEditor.setSyntaxEditingStyle("text/solar");
         this.txtCodeEditor.setCodeFoldingEnabled(true);
+        this.lexAnalyzerController = new LexicalAnalyzerController();
     }
 
     /**
@@ -35,73 +44,186 @@ public class FrmMain extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        pnlEditorContainer = new javax.swing.JPanel();
-        rTextScrollPane2 = new org.fife.ui.rtextarea.RTextScrollPane();
-        txtCodeEditor = new org.fife.ui.rsyntaxtextarea.RSyntaxTextArea();
         jPanel1 = new javax.swing.JPanel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        pnlContainer = new javax.swing.JPanel();
+        pnlEditorContainer = new javax.swing.JPanel();
+        rTextScrollPane1 = new org.fife.ui.rtextarea.RTextScrollPane();
+        txtCodeEditor = new org.fife.ui.rsyntaxtextarea.RSyntaxTextArea();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblLexemes = new javax.swing.JTable();
+        btnOpenFile = new javax.swing.JButton();
+        btnAnalyze = new javax.swing.JButton();
+        btnSave = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        pnlEditorContainer.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        txtCodeEditor.setColumns(20);
-        txtCodeEditor.setRows(20);
-        txtCodeEditor.setTabSize(2);
-        txtCodeEditor.setCodeFoldingEnabled(true);
-        txtCodeEditor.setMarkAllHighlightColor(new java.awt.Color(255, 255, 153));
-        txtCodeEditor.setSyntaxEditingStyle("text/javascript");
-        rTextScrollPane2.setViewportView(txtCodeEditor);
-
-        javax.swing.GroupLayout pnlEditorContainerLayout = new javax.swing.GroupLayout(pnlEditorContainer);
-        pnlEditorContainer.setLayout(pnlEditorContainerLayout);
-        pnlEditorContainerLayout.setHorizontalGroup(
-            pnlEditorContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rTextScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
-        );
-        pnlEditorContainerLayout.setVerticalGroup(
-            pnlEditorContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(rTextScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
-        );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 475, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
+        pnlEditorContainer.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        txtCodeEditor.setColumns(20);
+        txtCodeEditor.setRows(5);
+        rTextScrollPane1.setViewportView(txtCodeEditor);
+
+        javax.swing.GroupLayout pnlEditorContainerLayout = new javax.swing.GroupLayout(pnlEditorContainer);
+        pnlEditorContainer.setLayout(pnlEditorContainerLayout);
+        pnlEditorContainerLayout.setHorizontalGroup(
+            pnlEditorContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(rTextScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+        );
+        pnlEditorContainerLayout.setVerticalGroup(
+            pnlEditorContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(rTextScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        tblLexemes.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Lexema", "Tipo"
+            }
+        ));
+        jScrollPane1.setViewportView(tblLexemes);
+
+        btnOpenFile.setBackground(new java.awt.Color(0, 255, 0));
+        btnOpenFile.setText("Abrir Archivo");
+        btnOpenFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOpenFileActionPerformed(evt);
+            }
+        });
+
+        btnAnalyze.setBackground(new java.awt.Color(0, 102, 255));
+        btnAnalyze.setForeground(new java.awt.Color(255, 255, 255));
+        btnAnalyze.setText("Analizar");
+        btnAnalyze.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnalyzeActionPerformed(evt);
+            }
+        });
+
+        btnSave.setBackground(new java.awt.Color(102, 102, 255));
+        btnSave.setForeground(new java.awt.Color(255, 255, 255));
+        btnSave.setText("Guardar");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout pnlContainerLayout = new javax.swing.GroupLayout(pnlContainer);
+        pnlContainer.setLayout(pnlContainerLayout);
+        pnlContainerLayout.setHorizontalGroup(
+            pnlContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlContainerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(pnlEditorContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlContainerLayout.createSequentialGroup()
+                        .addComponent(btnOpenFile, javax.swing.GroupLayout.PREFERRED_SIZE, 212, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnSave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(18, 18, 18)
+                .addGroup(pnlContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE)
+                    .addComponent(btnAnalyze, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        pnlContainerLayout.setVerticalGroup(
+            pnlContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlContainerLayout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addGroup(pnlContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlContainerLayout.createSequentialGroup()
+                        .addGroup(pnlContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnOpenFile)
+                            .addComponent(btnSave))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pnlEditorContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(pnlContainerLayout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnAnalyze)))
+                .addGap(13, 13, 13))
+        );
+
+        jTabbedPane1.addTab("Analizador Lexico", pnlContainer);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(pnlEditorContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 953, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pnlEditorContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(jTabbedPane1)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnOpenFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenFileActionPerformed
+        JFileChooser filechooser = new JFileChooser(".");
+        filechooser.setFileFilter(new FileNameExtensionFilter("solar files (.sol)", "sol"));
+        int valueSelection = filechooser.showOpenDialog(this);
+        Scanner input = null;
+        
+        if (valueSelection == JFileChooser.APPROVE_OPTION) {
+            String fileRoute = filechooser.getSelectedFile().getAbsolutePath();
+            try {
+                File file = new File(fileRoute);
+                input = new Scanner(file);
+                while (input.hasNext()) {
+                    this.txtCodeEditor.setText(this.txtCodeEditor.getText() + input.nextLine() + "\n");
+                }
+            } catch (FileNotFoundException e) {
+                System.out.println(e.getMessage());
+            } finally {
+                if (input != null) {
+                    input.close();
+                }
+            }
+        }
+    }//GEN-LAST:event_btnOpenFileActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalyzeActionPerformed
+        this.tblLexemes.setModel(this.lexAnalyzerController.analyze(this.txtCodeEditor.getText()));
+    }//GEN-LAST:event_btnAnalyzeActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAnalyze;
+    private javax.swing.JButton btnOpenFile;
+    private javax.swing.JButton btnSave;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JPanel pnlContainer;
     private javax.swing.JPanel pnlEditorContainer;
-    private org.fife.ui.rtextarea.RTextScrollPane rTextScrollPane2;
+    private org.fife.ui.rtextarea.RTextScrollPane rTextScrollPane1;
+    private javax.swing.JTable tblLexemes;
     private org.fife.ui.rsyntaxtextarea.RSyntaxTextArea txtCodeEditor;
     // End of variables declaration//GEN-END:variables
 }

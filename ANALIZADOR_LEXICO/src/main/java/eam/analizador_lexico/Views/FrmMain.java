@@ -18,7 +18,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class FrmMain extends javax.swing.JFrame {
     
-    private LexicalAnalyzerController lexAnalyzerController;
+    private final LexicalAnalyzerController lexAnalyzerController;
 
     /**
      * Creates new form FrmMain

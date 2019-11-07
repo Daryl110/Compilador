@@ -9,6 +9,7 @@
         <module>ANALIZADOR_LEXICO</module>
         <module>ANALIZADOR_SINTACTICO</module>
         <module>GUI_COMPILADOR</module>
+        <module>JPA_Simula</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

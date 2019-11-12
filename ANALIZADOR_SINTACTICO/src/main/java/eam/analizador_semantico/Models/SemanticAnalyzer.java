@@ -6,10 +6,7 @@
 
 package eam.analizador_semantico.Models;
 
-import eam.analizador_lexico.Models.Lexeme;
-import eam.analizador_lexico.Models.LexemeTypes;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
-import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
 
 /**
  *
@@ -25,25 +22,6 @@ public class SemanticAnalyzer {
     }
     
     public Context analyze() {
-        Context rootContext = new Context(this.root);
-        for (Statement child : this.root.getChilds()) {
-            if (child.toString().equals(SyntacticTypes.SIMPLE_ASSIGNMENT_STATMENT)) {
-                Variable var = new Variable(rootContext);
-                for(Statement grandChild : child.getChilds()){
-                    if (grandChild.isLeaf()) {
-                        Lexeme lexeme = ((Lexeme)(grandChild));
-                        if (lexeme.getType().equals(LexemeTypes.DATA_TYPE)) {
-                            var.setDataType(lexeme);
-                        }else if(lexeme.getType().equals(LexemeTypes.IDENTIFIERS)){
-                            var.setIdentifier(lexeme);
-                        }
-                    }else{
-                        var.setValue(grandChild);
-                    }
-                }
-                rootContext.addVariable(var);
-            }
-        }
-        return rootContext;
+        return this.root.generateContext(null);
     }
 }

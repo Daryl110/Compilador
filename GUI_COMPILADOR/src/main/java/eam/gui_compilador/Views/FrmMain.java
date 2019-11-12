@@ -9,6 +9,7 @@ import eam.analizador_lexico.Controllers.LexicalAnalyzerController;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_semantico.Exceptions.SemanticError;
 import eam.analizador_semantico.Models.SemanticAnalyzer;
+import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import eam.analizador_sintactico.Models.SyntacticAnalyzer;
 import java.awt.Font;
 import java.io.BufferedWriter;
@@ -397,7 +398,7 @@ public class FrmMain extends javax.swing.JFrame {
             }catch(SemanticError e){
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }
-        }catch(Exception e){
+        }catch(SyntaxError e){
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
     }//GEN-LAST:event_btnAnalyzeActionPerformed

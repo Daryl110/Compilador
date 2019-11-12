@@ -19,21 +19,21 @@ import javax.swing.tree.TreeNode;
  *
  * @author Daryl Ospina
  */
-public abstract class Statement implements TreeNode{
-    
+public abstract class Statement implements TreeNode {
+
     protected int positionBack = -1;
 
     public Statement(Statement root) {
         this.root = root;
         this.childs = new ArrayList<>();
     }
-    
+
     public Statement(Statement root, int positionBack) {
         this.root = root;
         this.childs = new ArrayList<>();
         this.positionBack = positionBack;
     }
-    
+
     /**
      * Sentencia dentro de la que se encuentra esta sentencia.
      */
@@ -43,21 +43,22 @@ public abstract class Statement implements TreeNode{
      * Hijos de la raiz de derivacion.
      */
     protected List<Statement> childs;
-    
+
     @Override
     public abstract String toString();
+
     public abstract Statement analyze(TokensFlow tokensFlow, Lexeme lexeme);
-    
-    public boolean addChild(Statement statement){
+
+    public boolean addChild(Statement statement) {
         return this.childs.add(statement);
     }
-    
-    public void setParent(Statement root){
+
+    public void setParent(Statement root) {
         this.root = root;
     }
-    
+
     public abstract boolean withContext();
-    
+
     @Override
     public TreeNode getChildAt(int childIndex) {
         return this.childs.get(childIndex);
@@ -106,27 +107,39 @@ public abstract class Statement implements TreeNode{
     public List<Statement> getChilds() {
         return childs;
     }
-    
-    public Context generateContext(){
-        Context rootContext = new Context(this);
-        for (Statement child : this.getChilds()) {
-            if (child.toString().equals(SyntacticTypes.SIMPLE_ASSIGNMENT_STATMENT)) {
+
+    public Context generateContext(Context parent) {
+        Context rootContext = new Context(parent, this);
+        boolean added = false;
+        for (Statement child : this.childs) {
+            if (child.toString().equals(SyntacticTypes.SIMPLE_ASSIGNMENT_STATMENT) && this.withContext()) {
                 Variable var = new Variable(rootContext);
-                for(Statement grandChild : child.getChilds()){
+                for (Statement grandChild : child.childs) {
                     if (grandChild.isLeaf()) {
-                        Lexeme lexeme = ((Lexeme)(grandChild));
+                        Lexeme lexeme = ((Lexeme) (grandChild));
                         if (lexeme.getType().equals(LexemeTypes.DATA_TYPE)) {
                             var.setDataType(lexeme);
-                        }else if(lexeme.getType().equals(LexemeTypes.IDENTIFIERS)){
+                        } else if (lexeme.getType().equals(LexemeTypes.IDENTIFIERS)) {
                             var.setIdentifier(lexeme);
                         }
-                    }else{
+                    } else if (grandChild.withContext()) {
+                        var.setValue(grandChild);
+                        if (var.getIdentifier() != null && var.getValue() != null) {
+                            rootContext.addVariable(var);
+                            added = true;
+                        }
+                        rootContext.addChildContext(grandChild.generateContext(rootContext));
+                    } else {
                         var.setValue(grandChild);
                     }
                 }
-                rootContext.addVariable(var);
-            }else{
-                
+                if (var.getIdentifier() != null && var.getValue() != null && !added) {
+                    rootContext.addVariable(var);
+                }else{
+                    added = false;
+                }
+            } else if (!child.isLeaf() && child.withContext()) {
+                rootContext.addChildContext(child.generateContext(rootContext));
             }
         }
         return rootContext;

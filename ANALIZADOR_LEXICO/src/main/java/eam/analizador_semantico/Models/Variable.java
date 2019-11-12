@@ -6,7 +6,6 @@
 
 package eam.analizador_semantico.Models;
 
-import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 
 /**
@@ -32,6 +31,8 @@ public class Variable extends Param {
 
     @Override
     public String toString() {
-        return "{tipoDato : "+this.getDataType().getWord()+", identificador : "+this.getIdentifier().getWord()+", value : "+this.value.toString()+"}";
+        return "{\"tipoDato\" : \""+this.getDataType().getWord()+"\", "
+                + "\"identificador\" : \""+this.getIdentifier().getWord()+"\", "
+                + "\"value\" : \""+this.value.toString()+"\"}";
     }
 }

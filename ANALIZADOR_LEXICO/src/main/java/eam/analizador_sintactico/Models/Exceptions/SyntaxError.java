@@ -9,7 +9,7 @@ package eam.analizador_sintactico.Models.Exceptions;
  *
  * @author Daryl Ospina
  */
-public class SyntaxError extends RuntimeException{
+public class SyntaxError extends RuntimeException {
 
     public SyntaxError(String message) {
         super(message);

@@ -7,8 +7,8 @@ package eam.analizador_sintactico.Models.Statements.Functions;
 
 import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_lexico.Models.LexemeTypes;
-import eam.analizador_lexico.Models.Statement;
-import eam.analizador_lexico.Models.TokensFlow;
+import eam.analizador_sintactico.Models.Statements.Structure.Statement;
+import eam.analizador_sintactico.Models.Statements.Structure.TokensFlow;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import eam.analizador_sintactico.Models.Statements.Expressions.ExpressionStatement;
 import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
@@ -157,6 +157,11 @@ public class InvokeFunctionStatement extends Statement {
                                         + tokensFlow.getCurrentToken().toString()
                                         + " se esperaba una expresion valida ");
         }
+    }
+
+    @Override
+    public boolean withContext() {
+        return false;
     }
 
 }

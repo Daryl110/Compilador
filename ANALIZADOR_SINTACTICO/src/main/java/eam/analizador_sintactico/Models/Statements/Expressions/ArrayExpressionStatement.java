@@ -7,8 +7,8 @@ package eam.analizador_sintactico.Models.Statements.Expressions;
 
 import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_lexico.Models.LexemeTypes;
-import eam.analizador_lexico.Models.Statement;
-import eam.analizador_lexico.Models.TokensFlow;
+import eam.analizador_sintactico.Models.Statements.Structure.Statement;
+import eam.analizador_sintactico.Models.Statements.Structure.TokensFlow;
 import eam.analizador_sintactico.Models.Statements.Functions.ArrowFunctionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.FunctionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.InvokeFunctionStatement;
@@ -214,6 +214,11 @@ public class ArrayExpressionStatement extends Statement {
     @Override
     public String toString() {
         return SyntacticTypes.ARRAY_EXPRESSION_STATEMENT;
+    }
+
+    @Override
+    public boolean withContext() {
+        return false;
     }
 
 }

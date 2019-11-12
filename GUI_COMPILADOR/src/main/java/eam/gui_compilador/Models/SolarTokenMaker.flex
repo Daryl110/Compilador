@@ -1,5 +1,5 @@
 /*
- * Generated on 10/22/19 12:45 AM
+ * Generated on 11/7/19 12:21 PM
  */
 package eam.gui_compilador.Models;
 
@@ -16,7 +16,7 @@ import org.fife.ui.rsyntaxtextarea.*;
 
 %public
 %class SolarTokenMaker
-%extends AbstractJFlexTokenMaker
+%extends AbstractJFlexCTokenMaker
 %unicode
 /* Case sensitive */
 %type org.fife.ui.rsyntaxtextarea.Token
@@ -239,15 +239,18 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 	"->" |
 "NaN" |
 "break" |
+"case" |
 "continue" |
+"default" |
 "else" |
 "for" |
 "function" |
 "if" |
 "null" |
 "return" |
+"switch" |
 "until" |
-"whille"		{ addToken(Token.RESERVED_WORD); }
+"while"		{ addToken(Token.RESERVED_WORD); }
 
 	/* Keywords 2 (just an optional set of keywords colored differently) */
 	/* No keywords 2 */
@@ -260,7 +263,25 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "string"		{ addToken(Token.DATA_TYPE); }
 
 	/* Functions */
-	/* No functions */
+	".add" |
+".duplicate" |
+".intersection" |
+".max" |
+".min" |
+".orderByAsc" |
+".orderByDesc" |
+".poliferation" |
+".pop" |
+".pow" |
+".remove" |
+".reverse" |
+".size" |
+".slicing" |
+".strain" |
+".substract" |
+".sum" |
+".union" |
+"System.log"		{ addToken(Token.FUNCTION); }
 
 	{BooleanLiteral}			{ addToken(Token.LITERAL_BOOLEAN); }
 
@@ -289,6 +310,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "%=" |
 "&&" |
 "*" |
+"**" |
 "*=" |
 "+" |
 "++" |
@@ -300,13 +322,13 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "/" |
 "/=" |
 ":" |
+";" |
 "<" |
 "<=" |
 "=" |
 "==" |
 ">" |
 ">=" |
-"?" |
 "^" |
 "||"		{ addToken(Token.OPERATOR); }
 

@@ -5,6 +5,9 @@
  */
 package eam.analizador_lexico.Models;
 
+import eam.analizador_sintactico.Models.Statements.Structure.TokensFlow;
+import eam.analizador_sintactico.Models.Statements.Structure.Statement;
+
 /**
  *
  * @author Daryl Ospina
@@ -80,6 +83,11 @@ public class Lexeme extends Statement {
     @Override
     public Statement analyze(TokensFlow tokensFlow, Lexeme lexeme) {
         return this;
+    }
+
+    @Override
+    public boolean withContext() {
+        return false;
     }
     
 }

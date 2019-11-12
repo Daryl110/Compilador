@@ -3,8 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package eam.analizador_lexico.Models;
+package eam.analizador_sintactico.Models.Statements.Structure;
 
+import eam.analizador_lexico.Models.Lexeme;
+import eam.analizador_lexico.Models.LexemeTypes;
+import eam.analizador_semantico.Models.Context;
+import eam.analizador_semantico.Models.Variable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -51,6 +55,8 @@ public abstract class Statement implements TreeNode{
     public void setParent(Statement root){
         this.root = root;
     }
+    
+    public abstract boolean withContext();
     
     @Override
     public TreeNode getChildAt(int childIndex) {
@@ -99,5 +105,30 @@ public abstract class Statement implements TreeNode{
 
     public List<Statement> getChilds() {
         return childs;
+    }
+    
+    public Context generateContext(){
+        Context rootContext = new Context(this);
+        for (Statement child : this.getChilds()) {
+            if (child.toString().equals(SyntacticTypes.SIMPLE_ASSIGNMENT_STATMENT)) {
+                Variable var = new Variable(rootContext);
+                for(Statement grandChild : child.getChilds()){
+                    if (grandChild.isLeaf()) {
+                        Lexeme lexeme = ((Lexeme)(grandChild));
+                        if (lexeme.getType().equals(LexemeTypes.DATA_TYPE)) {
+                            var.setDataType(lexeme);
+                        }else if(lexeme.getType().equals(LexemeTypes.IDENTIFIERS)){
+                            var.setIdentifier(lexeme);
+                        }
+                    }else{
+                        var.setValue(grandChild);
+                    }
+                }
+                rootContext.addVariable(var);
+            }else{
+                
+            }
+        }
+        return rootContext;
     }
 }

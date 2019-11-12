@@ -7,8 +7,8 @@ package eam.analizador_sintactico.Models.Statements.Iterators;
 
 import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_lexico.Models.LexemeTypes;
-import eam.analizador_lexico.Models.Statement;
-import eam.analizador_lexico.Models.TokensFlow;
+import eam.analizador_sintactico.Models.Statements.Structure.Statement;
+import eam.analizador_sintactico.Models.Statements.Structure.TokensFlow;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import eam.analizador_sintactico.Models.Statements.Assignment.IncrementalDecrementalOperationStatement;
 import eam.analizador_sintactico.Models.Statements.Assignment.SimpleAssignmentStatement;
@@ -165,6 +165,11 @@ public class ForStatement extends Statement {
             tokensFlow.backTrack();
         }
         return null;
+    }
+
+    @Override
+    public boolean withContext() {
+        return true;
     }
 
 }

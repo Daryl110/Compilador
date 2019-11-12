@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package eam.analizador_lexico.Models;
+package eam.analizador_sintactico.Models.Statements.Structure;
 
+import eam.analizador_lexico.Models.Lexeme;
 import java.util.List;
 
 /**

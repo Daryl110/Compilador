@@ -19,7 +19,6 @@ public class A_DataTypes implements Automata{
     public Lexeme execute(String word, int row, int column){
         switch (word) {
             case "string":
-            case "char":
             case "number":
             case "boolean":
             case "Array":

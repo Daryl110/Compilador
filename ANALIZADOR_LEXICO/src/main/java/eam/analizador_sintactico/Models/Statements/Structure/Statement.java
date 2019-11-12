@@ -7,6 +7,7 @@ package eam.analizador_sintactico.Models.Statements.Structure;
 
 import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_lexico.Models.LexemeTypes;
+import eam.analizador_semantico.Exceptions.SemanticError;
 import eam.analizador_semantico.Models.Context;
 import eam.analizador_semantico.Models.Variable;
 import java.util.ArrayList;
@@ -135,9 +136,11 @@ public abstract class Statement implements TreeNode {
                 }
                 if (var.getIdentifier() != null && var.getValue() != null && !added) {
                     rootContext.addVariable(var);
-                }else{
+                } else {
                     added = false;
                 }
+            } else if (child.toString().equals(SyntacticTypes.INCREMENTAL_DECREMENTAL_OPERATION_STATEMENT)) {
+                rootContext.validateExiststVariable((Lexeme) child.getChildAt(0));
             } else if (!child.isLeaf() && child.withContext()) {
                 rootContext.addChildContext(child.generateContext(rootContext));
             }

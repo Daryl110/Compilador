@@ -5,8 +5,11 @@
  */
 package eam.analizador_semantico.Models;
 
+import eam.analizador_lexico.Models.Lexeme;
+import eam.analizador_lexico.Models.LexemeTypes;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_semantico.Exceptions.SemanticError;
+import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,12 +51,27 @@ public class Context {
         this.parent = parent;
     }
 
+    public Statement getStatement() {
+        return statement;
+    }
+
+    public void setStatement(Statement statement) {
+        this.statement = statement;
+    }
+
     public boolean addVariable(Variable var) {
-        this.validateVariableContext(var);
+        this.validateVariableParentContext(var);
         Context aux = this.getParent();
         while (aux != null) {
-            if(aux.validateVariableContext(var))return true;
+            if (aux.validateVariableParentContext(var)) {
+                return true;
+            }
             aux = aux.getParent();
+        }
+        if (var.getDataType() != null) {
+            this.validateDataTypeVariable(var);
+        } else {
+            this.validateExiststVariable(var.getIdentifier());
         }
         return this.variables.add(var);
     }
@@ -62,13 +80,50 @@ public class Context {
         return this.childsContexts.add(childContext);
     }
 
-    public boolean validateVariableContext(Variable var) {
+    private void validateDataTypeVariable(Variable var) {
+        if (!((((var.getDataType().getType().equals(LexemeTypes.DATA_TYPE)
+                && var.getDataType().getWord().equals("number"))
+                && (var.getValue().toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
+                || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("NaN"))
+                || var.getValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)))
+                || ((var.getDataType().getType().equals(LexemeTypes.DATA_TYPE)
+                && var.getDataType().getWord().equals("Array"))
+                && (var.getValue().toString().equals(SyntacticTypes.ARRAY_EXPRESSION_STATEMENT)
+                || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("null"))
+                || var.getValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)))
+                || ((var.getDataType().getType().equals(LexemeTypes.DATA_TYPE)
+                && var.getDataType().getWord().equals("string"))
+                && (var.getValue().toString().equals(SyntacticTypes.STRING_EXPRESSION_STATEMENT)
+                || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("null"))
+                || var.getValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)))
+                || ((var.getDataType().getType().equals(LexemeTypes.DATA_TYPE)
+                && var.getDataType().getWord().equals("boolean"))
+                && (var.getValue().toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
+                || var.getValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT))))
+                || (((var.getDataType().getType().equals(LexemeTypes.DATA_TYPE)
+                && var.getDataType().getWord().equals("any"))
+                && (var.getValue().toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
+                || var.getValue().toString().equals(SyntacticTypes.ARROW_FUNCTION_STATEMENT)
+                || var.getValue().toString().equals(SyntacticTypes.STRING_EXPRESSION_STATEMENT)
+                || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("null"))
+                || var.getValue().toString().equals(SyntacticTypes.ARRAY_EXPRESSION_STATEMENT)
+                || var.getValue().toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
+                || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("NaN"))
+                || var.getValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)))))) {
+            throw new SemanticError("el tipo de dato "
+                    + "" + var.getDataType().getWord() + " de la variable "
+                    + "" + var.getIdentifier().getWord() + ""
+                    + " no coincide con el valor de una " + var.getValue().toString() + "\nen la posicion " + var.getDataType().getRow() + ":" + var.getDataType().getColumn());
+        }
+    }
+
+    public boolean validateVariableParentContext(Variable var) {
         boolean setValue = false;
         int positionAux = 0;
         for (Variable auxVar : this.variables) {
             if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())
                     && var.getDataType() != null) {
-                throw new SemanticError("ya existe una variable con el nombre de " + var.getIdentifier().getWord());
+                throw new SemanticError("ya existe una variable con el nombre de " + var.getIdentifier().getWord() + "\nen la posicion " + var.getDataType().getRow() + ":" + var.getDataType().getColumn());
             } else if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())
                     && var.getDataType() == null) {
                 setValue = true;
@@ -82,20 +137,68 @@ public class Context {
         return setValue;
     }
 
-    public String getVariables() {
+    public void validateExiststVariable(Lexeme identifier) {
+        Variable var = this.getVariable(identifier);
+        if (var != null) {
+            if (!var.getDataType().getWord().equals("number")) {
+                throw new SemanticError("no se puede incrementar o decrementar una variable de tipo " + var.getDataType().getWord());
+            }
+        } else {
+            throw new SemanticError("La variable con el nombre " + (identifier).getWord() + " no existe");
+        }
+    }
+
+    public Variable getVariable(Lexeme identifier) {
+        Variable var = new Variable(this), varReturn = null;
+        var.setIdentifier(identifier);
+        for (Variable auxVar : this.variables) {
+            if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())) {
+                varReturn = auxVar;
+                break;
+            }
+        }
+        for (Context context : this.childsContexts) {
+            for (Variable auxVar : context.getVariables()) {
+                if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())) {
+                    varReturn = auxVar;
+                    break;
+                }
+            }
+        }
+        Context context = this.parent;
+        while (context != null) {
+            for (Variable auxVar : context.getVariables()) {
+                if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())) {
+                    varReturn = auxVar;
+                    break;
+                }
+            }
+            context = context.getParent();
+        }
+
+        return varReturn;
+    }
+
+    public String getVariablesJSON() {
         String concat = "";
-        return "{\""+this.statement.toString() + "\" : {\"variables\" : " + Arrays
+        for (int i = 0; i < this.childsContexts.size(); i++) {
+            concat += this.childsContexts.get(i).getVariablesJSON();
+            if (i != this.childsContexts.size() - 1) {
+                concat += ",";
+            }
+        }
+        return "{\"" + this.statement.toString() + "\" : {\"variables\" : " + Arrays
                 .toString(
                         this.variables.toArray()
                 ) + ", \"contextosHijos\" : ["
-                + this.childsContexts
-                        .stream()
-                        .map(
-                                (context) -> context.getVariables()
-                        )
-                        .reduce(
-                                concat,
-                                String::concat
-                        ) + "]}}";
+                + concat + "]}}";
+    }
+
+    public List<Variable> getVariables() {
+        return this.variables;
+    }
+
+    public List<Context> getChildsContexts() {
+        return this.childsContexts;
     }
 }

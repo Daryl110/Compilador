@@ -6,9 +6,9 @@
 package eam.gui_compilador.Views;
 
 import eam.analizador_lexico.Controllers.LexicalAnalyzerController;
+import eam.analizador_semantico.Controllers.SemanticAnalyzerController;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_semantico.Exceptions.SemanticError;
-import eam.analizador_semantico.Models.SemanticAnalyzer;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import eam.analizador_sintactico.Models.SyntacticAnalyzer;
 import java.awt.Font;
@@ -33,7 +33,7 @@ public class FrmMain extends javax.swing.JFrame {
 
     private final LexicalAnalyzerController lexAnalyzerController;
     private SyntacticAnalyzer syntacticAnalyzer;
-    private SemanticAnalyzer semanticAnalyzer;
+    private SemanticAnalyzerController semanticAnalyzerController;
 
     /**
      * Creates new form FrmMain
@@ -218,7 +218,7 @@ public class FrmMain extends javax.swing.JFrame {
 
             },
             new String [] {
-                "TIPO DE DATO", "IDENTIFICADOR", "VALOR", "CONTEXTO"
+                "TIPO DE DATO", "IDENTIFICADOR", "VALOR", "CONTEXTO", "CONTEXTO PADRE"
             }
         ));
         jScrollPane3.setViewportView(tblVariables);
@@ -394,7 +394,7 @@ public class FrmMain extends javax.swing.JFrame {
             Statement compilationUnit = this.syntacticAnalyzer.analyze();
             this.trLexemes.setModel(new DefaultTreeModel(compilationUnit));
             try{
-                this.txtOutput.setText(new SemanticAnalyzer(compilationUnit).analyze().getVariables());
+                this.tblVariables.setModel(new SemanticAnalyzerController(compilationUnit).analyze());
             }catch(SemanticError e){
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }

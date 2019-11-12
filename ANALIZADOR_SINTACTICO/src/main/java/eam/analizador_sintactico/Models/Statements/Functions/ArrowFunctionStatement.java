@@ -129,15 +129,7 @@ public class ArrowFunctionStatement extends Statement {
                                 + tokensFlow.getCurrentToken().toString()
                                 + " se esperaba un > ");
                     }
-                } else {
-                    throw new SyntaxError("[Error] : "
-                            + tokensFlow.getCurrentToken().toString()
-                            + " se esperaba un - ");
                 }
-            } else {
-                throw new SyntaxError("[Error] : "
-                        + tokensFlow.getCurrentToken().toString()
-                        + " se esperaba un ) ");
             }
         }
         if (this.positionBack != -1) {

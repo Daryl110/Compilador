@@ -20,7 +20,7 @@ import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
 public class InvokeFunctionStatement extends Statement {
 
     private boolean atLeastOneInvoke;
-    private Statement expression;
+    private Statement expression, arrowFunction;
 
     public InvokeFunctionStatement(Statement root) {
         super(root);
@@ -95,7 +95,7 @@ public class InvokeFunctionStatement extends Statement {
                             if (lexeme == null) {
                                 lexeme = tokensFlow.moveTo(tokensFlow.getPositionCurrent() - 1);
                                 throw new SyntaxError("[Error] : "
-                                        + "se esperaba un ) al final de " + this.toString() 
+                                        + "se esperaba un ) al final de " + this.toString()
                                         + " posicion: row: " + lexeme.getRow() + " - columna: " + lexeme.getColumn());
                             } else {
                                 throw new SyntaxError("[Error] : "
@@ -117,9 +117,10 @@ public class InvokeFunctionStatement extends Statement {
 
     private Statement recursiveAnalyze(TokensFlow tokensFlow, Lexeme lexeme) {
         this.expression = new ExpressionStatement(this.root, tokensFlow.getPositionCurrent());
-        this.expression = this.expression.analyze(tokensFlow, lexeme);
-        if (this.expression != null) {
-            this.childs.add(this.expression);
+        this.arrowFunction = new ArrowFunctionStatement(this.root, tokensFlow.getPositionCurrent());
+        this.arrowFunction = this.arrowFunction.analyze(tokensFlow, lexeme);
+        if (this.arrowFunction != null) {
+            this.childs.add(this.arrowFunction);
             this.atLeastOneInvoke = true;
             lexeme = tokensFlow.getCurrentToken();
 
@@ -132,7 +133,24 @@ public class InvokeFunctionStatement extends Statement {
                 return this;
             }
         } else {
-            return this.createChildInvokeFunction(tokensFlow, lexeme);
+            this.expression = this.expression.analyze(tokensFlow, lexeme);
+
+            if (this.expression != null) {
+                this.childs.add(this.expression);
+                this.atLeastOneInvoke = true;
+                lexeme = tokensFlow.getCurrentToken();
+
+                if (lexeme != null && (lexeme.getType().equals(LexemeTypes.OTHERS)
+                        && lexeme.getWord().equals(","))) {
+
+                    this.childs.add(lexeme);
+                    return recursiveAnalyze(tokensFlow, tokensFlow.move());
+                } else {
+                    return this;
+                }
+            } else {
+                return this.createChildInvokeFunction(tokensFlow, lexeme);
+            }
         }
     }
 
@@ -154,8 +172,8 @@ public class InvokeFunctionStatement extends Statement {
             }
         } else {
             throw new SyntaxError("[Error] : "
-                                        + tokensFlow.getCurrentToken().toString()
-                                        + " se esperaba una expresion valida ");
+                    + tokensFlow.getCurrentToken().toString()
+                    + " se esperaba una expresion valida ");
         }
     }
 

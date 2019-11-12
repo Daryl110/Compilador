@@ -54,6 +54,7 @@ public class NumericExpressionStatement extends Statement {
 
             this.childs.add(lexeme);
             lexeme = tokensFlow.move();
+            this.endOperator = true;
         }
 
         if (lexeme != null && lexeme.getType().equals(LexemeTypes.OPEN_PARENTHESIS)) {
@@ -139,8 +140,6 @@ public class NumericExpressionStatement extends Statement {
                     return this;
                 } else if (this.openedParenthesis > 0) {
                     throw new SyntaxError("los parentesis de la expresion numerica, estan mal distribuidos.");
-                } else if (this.endOperator) {
-                    throw new SyntaxError("la expresion numerica no puede terminar con un operador");
                 }
                 if (this.positionBack != -1) {
                     tokensFlow.moveTo(this.positionBack);
@@ -173,8 +172,6 @@ public class NumericExpressionStatement extends Statement {
                     return this;
                 } else if (this.openedParenthesis > 0) {
                     throw new SyntaxError("los parentesis de la expresion numerica, estan mal distribuidos.");
-                } else if (this.endOperator) {
-                    throw new SyntaxError("la expresion numerica no puede terminar con un operador");
                 }
                 if (this.positionBack != -1) {
                     tokensFlow.moveTo(this.positionBack);
@@ -191,8 +188,6 @@ public class NumericExpressionStatement extends Statement {
                 return this;
             } else if (this.openedParenthesis > 0) {
                 throw new SyntaxError("los parentesis de la expresion numerica, estan mal distribuidos.");
-            } else if (this.endOperator) {
-                throw new SyntaxError("la expresion numerica no puede terminar con un operador");
             }
             if (this.positionBack != -1) {
                 tokensFlow.moveTo(this.positionBack);

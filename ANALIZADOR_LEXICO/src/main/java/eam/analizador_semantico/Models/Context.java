@@ -144,7 +144,7 @@ public class Context {
                 throw new SemanticError("no se puede incrementar o decrementar una variable de tipo " + var.getDataType().getWord());
             }
         } else {
-            throw new SemanticError("La variable con el nombre " + (identifier).getWord() + " no existe");
+            throw new SemanticError("La variable con el nombre " + (identifier).getWord() + "\nen la posicion " + var.getDataType().getRow() + ":" + var.getDataType().getColumn()+" no existe.");
         }
     }
 

@@ -7,6 +7,7 @@ package eam.analizador_semantico.Models;
 
 import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_lexico.Models.LexemeTypes;
+import eam.analizador_semantico.Exceptions.SemanticError;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,30 +19,51 @@ import java.util.List;
  */
 public class Function {
 
-    private Context parentContext, childContext;
-    private Lexeme identifier;
-    private final List<Param> params;
+    private Context context;
+    private Lexeme identifier, returnType;
+    private final List<Parameter> parameters;
 
-    public Function() {
-        this.params = new ArrayList<>();
+    public Function(Context context) {
+        this.parameters = new ArrayList<>();
     }
 
-    public void addParam(Param param) {
-        this.params.add(param);
+    public Context getContext() {
+        return context;
     }
 
-    public void createChildContext(Context childContext) {
-        this.childContext = childContext;
+    public Lexeme getIdentifier() {
+        return identifier;
     }
 
-    public void createParentContext(Context parentContext) {
-        this.parentContext = parentContext;
-    }
-
-    public void createIdentifier(Lexeme identifier) {
+    public void setIdentifier(Lexeme identifier) {
         if (!identifier.getType().equals(LexemeTypes.IDENTIFIERS)) {
-            throw new SyntaxError("[Error] : " + identifier.getWord() + " no es un identificador valido.");
+            throw new SemanticError(identifier.getWord() + " no es un "
+                    + "identificador valido\nen la posicion "
+                    + identifier.getRow() + ":" + identifier.getColumn());
         }
         this.identifier = identifier;
+    }
+
+    public Lexeme getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(Lexeme returnType) {
+        this.returnType = returnType;
+    }
+
+    public void addParam(Parameter param) {
+        for (Parameter auxParam : this.parameters) {
+            if (auxParam.getIdentifier().getWord().equals(param.getIdentifier().getWord())) {
+                throw new SemanticError("ya existe un parametro con este "
+                        + "identificador" + identifier.getWord() + "\nen la posicion "
+                        + identifier.getRow() + ":" + identifier.getColumn());
+            }
+        }
+        this.parameters.add(param);
+    }
+    
+    public List<Parameter> getParameters(){
+        return this.parameters;
     }
 }

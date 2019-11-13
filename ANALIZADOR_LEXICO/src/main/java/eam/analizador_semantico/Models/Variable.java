@@ -13,7 +13,7 @@ import eam.analizador_sintactico.Models.Statements.Structure.Statement;
  * @author daryl
  * @date 7/11/2019
  */
-public class Variable extends Param {
+public class Variable extends Parameter {
 
     private Statement value;
     

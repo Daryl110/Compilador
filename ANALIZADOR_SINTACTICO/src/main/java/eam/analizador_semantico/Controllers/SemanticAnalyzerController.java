@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package eam.analizador_semantico.Controllers;
 
 import eam.analizador_semantico.Models.Context;
+import eam.analizador_semantico.Models.Function;
+import eam.analizador_semantico.Models.Parameter;
 import eam.analizador_semantico.Models.SemanticAnalyzer;
 import eam.analizador_semantico.Models.Variable;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
@@ -21,12 +22,17 @@ import javax.swing.table.DefaultTableModel;
 public class SemanticAnalyzerController {
 
     private final SemanticAnalyzer semanticAnalyzer;
+    private Context rootContext;
 
     public SemanticAnalyzerController(Statement root) {
         this.semanticAnalyzer = new SemanticAnalyzer(root);
     }
     
-    public DefaultTableModel analyze() {
+    public void analyze(){
+        this.rootContext = this.semanticAnalyzer.analyze();
+    }
+
+    public DefaultTableModel getVariables() {
         DefaultTableModel model = new DefaultTableModel();
 
         model.addColumn("TIPO DE DATO");
@@ -35,24 +41,60 @@ public class SemanticAnalyzerController {
         model.addColumn("CONTEXTO");
         model.addColumn("CONTEXTO PADRE");
         
-        Context rootContext = this.semanticAnalyzer.analyze();
-        generateRowsModel(rootContext, model);
-        
+        generateRowsModelVariables(this.rootContext, model);
+
         return model;
     }
-    
-    private void generateRowsModel(Context context, DefaultTableModel model){
+
+    private void generateRowsModelVariables(Context context, DefaultTableModel model) {
         context.getVariables().forEach((Variable var) -> {
             model.addRow(new Object[]{
                 var.getDataType().getWord(),
                 var.getIdentifier().getWord(),
-                var.getValue().toString(),
+                var.getValue() == null ? "null" : var.getValue().toString(),
                 context.getStatement().toString(),
                 context.getParent() == null ? "null" : context.getParent().getStatement().toString()
             });
         });
         context.getChildsContexts().forEach((childContext) -> {
-            generateRowsModel(childContext, model);
+            generateRowsModelVariables(childContext, model);
+        });
+    }
+
+    public DefaultTableModel getFunctions() {
+        DefaultTableModel model = new DefaultTableModel();
+
+        model.addColumn("TIPO DE RETORNO");
+        model.addColumn("IDENTIFICADOR");
+        model.addColumn("PARAMETROS");
+        model.addColumn("CONTEXTO");
+        model.addColumn("CONTEXTO PADRE");
+        
+        generateRowsModelFunctions(this.rootContext, model);
+
+        return model;
+    }
+
+    private void generateRowsModelFunctions(Context context, DefaultTableModel model) {
+        context.getFunctions().forEach((Function function) -> {
+            String params = "";
+            params = function.getParameters()
+                    .stream()
+                    .map((param) -> param.toString() + " , ")
+                    .reduce(params, String::concat);
+            if (!params.isEmpty()) {
+                params = params.substring(0, params.length() - 3);
+            }
+            model.addRow(new Object[]{
+                function.getReturnType().getWord(),
+                function.getIdentifier().getWord(),
+                params,
+                context.getStatement().toString(),
+                context.getParent() == null ? "null" : context.getParent().getStatement().toString()
+            });
+        });
+        context.getChildsContexts().forEach((childContext) -> {
+            generateRowsModelFunctions(childContext, model);
         });
     }
 }

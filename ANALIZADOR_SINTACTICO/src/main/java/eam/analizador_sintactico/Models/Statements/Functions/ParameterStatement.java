@@ -35,11 +35,12 @@ public class ParameterStatement extends Statement {
         if (lexeme != null && lexeme.getType().equals(LexemeTypes.DATA_TYPE)) {
             this.childs.add(lexeme);
             lexeme = tokensFlow.move();
-        }
-        if (lexeme != null && lexeme.getType().equals(LexemeTypes.IDENTIFIERS)) {
-            this.childs.add(lexeme);
-            tokensFlow.move();
-            return this;
+
+            if (lexeme != null && lexeme.getType().equals(LexemeTypes.IDENTIFIERS)) {
+                this.childs.add(lexeme);
+                tokensFlow.move();
+                return this;
+            }
         }
         if (this.positionBack != -1) {
             tokensFlow.moveTo(this.positionBack);

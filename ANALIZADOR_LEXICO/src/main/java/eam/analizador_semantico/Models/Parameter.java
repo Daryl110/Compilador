@@ -15,14 +15,18 @@ import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
  * @author daryl
  * @date 7/11/2019
  */
-public class Param {
+public class Parameter {
 
     private final Context context;
     private Lexeme identifier;
     private Lexeme dataType;
     
-    public Param(Context context){
+    public Parameter(Context context){
         this.context = context;
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     public Lexeme getIdentifier() {
@@ -45,5 +49,10 @@ public class Param {
             throw new SyntaxError("[Error] : "+identifier.getWord()+" no es un tipo de dato valido.");
         }
         this.dataType = dataType;
+    }
+
+    @Override
+    public String toString() {
+        return "Identificador : " + identifier.getWord() + " - Tipo : " + dataType.getWord();
     }
 }

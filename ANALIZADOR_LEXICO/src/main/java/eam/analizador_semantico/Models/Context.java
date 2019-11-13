@@ -68,10 +68,15 @@ public class Context {
             }
             aux = aux.getParent();
         }
-        if (var.getDataType() != null) {
+        if (var.getDataType() != null && var.getValue() != null) {
             this.validateDataTypeVariable(var);
-        } else {
+        } else if (var.getDataType() == null) {
             this.validateExiststVariable(var.getIdentifier());
+        } else if (this.getFunction(var.getIdentifier()) != null) {
+            throw new SemanticError("ya existe una funcion con el nombre de "
+                    + var.getIdentifier().getWord() + "\nen la posicion "
+                    + var.getDataType().getRow() + ":"
+                    + var.getDataType().getColumn());
         }
         return this.variables.add(var);
     }
@@ -113,7 +118,9 @@ public class Context {
             throw new SemanticError("el tipo de dato "
                     + "" + var.getDataType().getWord() + " de la variable "
                     + "" + var.getIdentifier().getWord() + ""
-                    + " no coincide con el valor de una " + var.getValue().toString() + "\nen la posicion " + var.getDataType().getRow() + ":" + var.getDataType().getColumn());
+                    + " no coincide con el valor de una "
+                    + var.getValue().toString() + "\nen la posicion "
+                    + var.getDataType().getRow() + ":" + var.getDataType().getColumn());
         }
     }
 
@@ -123,7 +130,9 @@ public class Context {
         for (Variable auxVar : this.variables) {
             if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())
                     && var.getDataType() != null) {
-                throw new SemanticError("ya existe una variable con el nombre de " + var.getIdentifier().getWord() + "\nen la posicion " + var.getDataType().getRow() + ":" + var.getDataType().getColumn());
+                throw new SemanticError("ya existe una variable con el nombre de "
+                        + var.getIdentifier().getWord() + "\nen la posicion "
+                        + var.getDataType().getRow() + ":" + var.getDataType().getColumn());
             } else if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())
                     && var.getDataType() == null) {
                 setValue = true;
@@ -141,10 +150,13 @@ public class Context {
         Variable var = this.getVariable(identifier);
         if (var != null) {
             if (!var.getDataType().getWord().equals("number")) {
-                throw new SemanticError("no se puede incrementar o decrementar una variable de tipo " + var.getDataType().getWord());
+                throw new SemanticError("no se puede incrementar o decrementar una variable de tipo "
+                        + var.getDataType().getWord());
             }
         } else {
-            throw new SemanticError("La variable con el nombre " + (identifier).getWord() + "\nen la posicion " + var.getDataType().getRow() + ":" + var.getDataType().getColumn()+" no existe.");
+            throw new SemanticError("La variable con el nombre "
+                    + identifier.getWord() + "\nen la posicion "
+                    + identifier.getRow() + ":" + identifier.getColumn() + " no existe.");
         }
     }
 
@@ -179,6 +191,37 @@ public class Context {
         return varReturn;
     }
 
+    public Function getFunction(Lexeme identifier) {
+        Function function = new Function(this), functionReturn = null;
+        function.setIdentifier(identifier);
+        for (Function auxFunction : this.functions) {
+            if (auxFunction.getIdentifier().getWord().equals(function.getIdentifier().getWord())) {
+                functionReturn = auxFunction;
+                break;
+            }
+        }
+        for (Context context : this.childsContexts) {
+            for (Function auxFunction : context.getFunctions()) {
+                if (auxFunction.getIdentifier().getWord().equals(function.getIdentifier().getWord())) {
+                    functionReturn = auxFunction;
+                    break;
+                }
+            }
+        }
+        Context context = this.parent;
+        while (context != null) {
+            for (Function auxFunction : context.getFunctions()) {
+                if (auxFunction.getIdentifier().getWord().equals(function.getIdentifier().getWord())) {
+                    functionReturn = auxFunction;
+                    break;
+                }
+            }
+            context = context.getParent();
+        }
+
+        return functionReturn;
+    }
+
     public String getVariablesJSON() {
         String concat = "";
         for (int i = 0; i < this.childsContexts.size(); i++) {
@@ -200,5 +243,23 @@ public class Context {
 
     public List<Context> getChildsContexts() {
         return this.childsContexts;
+    }
+
+    public List<Function> getFunctions() {
+        return this.functions;
+    }
+
+    public void addFunction(Function function) {
+        Function auxFunction = this.getFunction(function.getIdentifier());
+        if (auxFunction != null) {
+            throw new SemanticError("ya existe una funcion con el nombre de "
+                    + function.getIdentifier().getWord() + "\nen la posicion "
+                    + function.getReturnType().getRow() + ":" + function.getReturnType().getColumn());
+        } else if (this.getVariable(function.getIdentifier()) != null) {
+            throw new SemanticError("ya existe una variable con el nombre de "
+                    + function.getIdentifier().getWord() + "\nen la posicion " + function.getReturnType().getRow()
+                    + ":" + function.getReturnType().getColumn());
+        }
+        this.functions.add(function);
     }
 }

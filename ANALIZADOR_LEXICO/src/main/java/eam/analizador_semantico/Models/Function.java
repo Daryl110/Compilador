@@ -8,7 +8,6 @@ package eam.analizador_semantico.Models;
 import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_lexico.Models.LexemeTypes;
 import eam.analizador_semantico.Exceptions.SemanticError;
-import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
 

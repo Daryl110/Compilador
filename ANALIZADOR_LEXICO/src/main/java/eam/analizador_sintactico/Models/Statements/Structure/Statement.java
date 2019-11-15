@@ -143,7 +143,8 @@ public abstract class Statement implements TreeNode {
             } else if (child.toString().equals(SyntacticTypes.INCREMENTAL_DECREMENTAL_OPERATION_STATEMENT)) {
                 rootContext.validateExiststVariable((Lexeme) child.getChildAt(0));
             } else if (child.toString().equals(SyntacticTypes.FUNCTION_STATEMENT)) {
-                Function function = new Function(rootContext);
+                Context contextFunction = new Context(rootContext, child);
+                Function function = new Function(contextFunction);
                 int auxCont = 0;
                 for (Statement grandChild : child.childs) {
                     if (grandChild.isLeaf()) {
@@ -171,7 +172,7 @@ public abstract class Statement implements TreeNode {
                                         }
                                     }
                                     if (var.getIdentifier() != null) {
-                                        rootContext.addVariable(var);
+                                        contextFunction.addVariable(var);
                                     }
                                     function.addParam(param);
                                 } else if (child.getChildAt(i).isLeaf()

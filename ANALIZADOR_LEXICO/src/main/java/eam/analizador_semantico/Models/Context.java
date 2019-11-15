@@ -62,6 +62,8 @@ public class Context {
     public boolean addVariable(Variable var) {
         this.validateVariableParentContext(var);
         Context aux = this.getParent();
+        Function func1 = this.getFunctionContextParent(var.getIdentifier()),
+                func2 = this.getFunctionContext(var.getIdentifier());
         while (aux != null) {
             if (aux.validateVariableParentContext(var)) {
                 return true;
@@ -77,6 +79,14 @@ public class Context {
                     + var.getIdentifier().getWord() + "\nen la posicion "
                     + var.getDataType().getRow() + ":"
                     + var.getDataType().getColumn());
+        }
+        
+        if (func1 != null
+                || func2 != null) {
+            throw new SemanticError("ya existe una funcion con el nombre de "
+                    + (func1 != null ? func1.getIdentifier().getWord() : func2.getIdentifier().getWord()) + "\nen la posicion "
+                    + (func1 != null ? func1.getReturnType().getRow() : func2.getReturnType().getRow()) + ":"
+                    + (func1 != null ? func1.getReturnType().getColumn() : func2.getReturnType().getColumn()));
         }
         return this.variables.add(var);
     }
@@ -160,7 +170,23 @@ public class Context {
         }
     }
 
-    public Variable getVariable(Lexeme identifier) {
+    private Variable getVariableContextParent(Lexeme identifier) {
+        Variable var = new Variable(this), varReturn = null;
+        var.setIdentifier(identifier);
+        Context context = this.parent;
+        while (context != null) {
+            for (Variable auxVar : context.getVariables()) {
+                if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())) {
+                    varReturn = auxVar;
+                    break;
+                }
+            }
+            context = context.getParent();
+        }
+        return varReturn;
+    }
+
+    private Variable getVariableContext(Lexeme identifier) {
         Variable var = new Variable(this), varReturn = null;
         var.setIdentifier(identifier);
         for (Variable auxVar : this.variables) {
@@ -169,6 +195,12 @@ public class Context {
                 break;
             }
         }
+        return varReturn;
+    }
+
+    private Variable getVariableChildsContext(Lexeme identifier) {
+        Variable var = new Variable(this), varReturn = null;
+        var.setIdentifier(identifier);
         for (Context context : this.childsContexts) {
             for (Variable auxVar : context.getVariables()) {
                 if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())) {
@@ -177,21 +209,40 @@ public class Context {
                 }
             }
         }
+        return varReturn;
+    }
+
+    public Variable getVariable(Lexeme identifier) {
+        Variable varReturn = this.getVariableContextParent(identifier);
+        if (varReturn != null) {
+            return varReturn;
+        }
+        varReturn = this.getVariableContext(identifier);
+        if (varReturn != null) {
+            return varReturn;
+        }
+        varReturn = this.getVariableChildsContext(identifier);
+        return varReturn;
+    }
+
+    private Function getFunctionContextParent(Lexeme identifier) {
+        Function function = new Function(this), functionReturn = null;
+        function.setIdentifier(identifier);
         Context context = this.parent;
         while (context != null) {
-            for (Variable auxVar : context.getVariables()) {
-                if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())) {
-                    varReturn = auxVar;
+            for (Function auxFunction : context.getFunctions()) {
+                if (auxFunction.getIdentifier().getWord().equals(function.getIdentifier().getWord())) {
+                    functionReturn = auxFunction;
                     break;
                 }
             }
             context = context.getParent();
         }
 
-        return varReturn;
+        return functionReturn;
     }
 
-    public Function getFunction(Lexeme identifier) {
+    private Function getFunctionContext(Lexeme identifier) {
         Function function = new Function(this), functionReturn = null;
         function.setIdentifier(identifier);
         for (Function auxFunction : this.functions) {
@@ -200,6 +251,12 @@ public class Context {
                 break;
             }
         }
+        return functionReturn;
+    }
+
+    private Function getFunctionChildsContexts(Lexeme identifier) {
+        Function function = new Function(this), functionReturn = null;
+        function.setIdentifier(identifier);
         for (Context context : this.childsContexts) {
             for (Function auxFunction : context.getFunctions()) {
                 if (auxFunction.getIdentifier().getWord().equals(function.getIdentifier().getWord())) {
@@ -208,17 +265,19 @@ public class Context {
                 }
             }
         }
-        Context context = this.parent;
-        while (context != null) {
-            for (Function auxFunction : context.getFunctions()) {
-                if (auxFunction.getIdentifier().getWord().equals(function.getIdentifier().getWord())) {
-                    functionReturn = auxFunction;
-                    break;
-                }
-            }
-            context = context.getParent();
-        }
+        return functionReturn;
+    }
 
+    public Function getFunction(Lexeme identifier) {
+        Function functionReturn = this.getFunctionContextParent(identifier);
+        if (functionReturn != null) {
+            return functionReturn;
+        }
+        functionReturn = this.getFunctionContext(identifier);
+        if (functionReturn != null) {
+            return functionReturn;
+        }
+        functionReturn = this.getFunctionChildsContexts(identifier);
         return functionReturn;
     }
 
@@ -250,12 +309,13 @@ public class Context {
     }
 
     public void addFunction(Function function) {
-        Function auxFunction = this.getFunction(function.getIdentifier());
-        if (auxFunction != null) {
+        if (this.getFunctionContextParent(function.getIdentifier()) != null
+                || this.getFunctionContext(function.getIdentifier()) != null) {
             throw new SemanticError("ya existe una funcion con el nombre de "
                     + function.getIdentifier().getWord() + "\nen la posicion "
                     + function.getReturnType().getRow() + ":" + function.getReturnType().getColumn());
-        } else if (this.getVariable(function.getIdentifier()) != null) {
+        } else if (this.getVariableContextParent(function.getIdentifier()) != null
+                || this.getVariableContext(function.getIdentifier()) != null) {
             throw new SemanticError("ya existe una variable con el nombre de "
                     + function.getIdentifier().getWord() + "\nen la posicion " + function.getReturnType().getRow()
                     + ":" + function.getReturnType().getColumn());

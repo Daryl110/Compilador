@@ -171,6 +171,7 @@ public abstract class Statement implements TreeNode {
                                                 + " no tiene parametros pero se le estan enviando."
                                                 + "\nen la posicion " + func.getIdentifier().getRow() + ":" + func.getIdentifier().getColumn());
                                     }
+                                    ///////////////////////////////// evitar que solo se puedan mandar variables
                                     Variable var = rootContext.getVariable(varIdentifier);
                                     if (var.getDataType().getWord().equals(func.getParameters().get(aux).getDataType().getWord())
                                             || func.getParameters().get(aux).getDataType().getWord().equals("any")) {
@@ -220,51 +221,7 @@ public abstract class Statement implements TreeNode {
                             }
 
                             if (returnStatement != null && !lexeme.getWord().equals("void")) {
-                                try {
-                                    if (!((lexeme.getWord().equals("number")
-                                            && (returnStatement.getReturnValue().toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
-                                            || (returnStatement.getReturnValue().isLeaf() && ((Lexeme) returnStatement.getReturnValue()).getWord().equals("NaN"))
-                                            || (returnStatement.getReturnValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
-                                            && (rootContext.getFunction((Lexeme) returnStatement.getReturnValue().getChildAt(0))
-                                                    .getReturnType().getWord().equals("number")))))
-                                            || (lexeme.getWord().equals("Array")
-                                            && (returnStatement.getReturnValue().toString().equals(SyntacticTypes.ARRAY_EXPRESSION_STATEMENT)
-                                            || (returnStatement.getReturnValue().isLeaf() && ((Lexeme) returnStatement.getReturnValue()).getWord().equals("null"))
-                                            || (returnStatement.getReturnValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
-                                            && (rootContext.getFunction((Lexeme) returnStatement.getReturnValue().getChildAt(0))
-                                                    .getReturnType().getWord().equals("Array")))))
-                                            || (lexeme.getWord().equals("string")
-                                            && (returnStatement.getReturnValue().toString().equals(SyntacticTypes.STRING_EXPRESSION_STATEMENT)
-                                            || (returnStatement.getReturnValue().isLeaf() && ((Lexeme) returnStatement.getReturnValue()).getWord().equals("null"))
-                                            || (returnStatement.getReturnValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
-                                            && (rootContext.getFunction((Lexeme) returnStatement.getReturnValue().getChildAt(0))
-                                                    .getReturnType().getWord().equals("string")))))
-                                            || (lexeme.getWord().equals("boolean")
-                                            && (returnStatement.getReturnValue().toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
-                                            || (returnStatement.getReturnValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
-                                            && (rootContext.getFunction((Lexeme) returnStatement.getReturnValue().getChildAt(0))
-                                                    .getReturnType().getWord().equals("boolean")))))
-                                            || (lexeme.getWord().equals("any")
-                                            && (returnStatement.getReturnValue().toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
-                                            || returnStatement.getReturnValue().toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
-                                            || returnStatement.getReturnValue().toString().equals(SyntacticTypes.STRING_EXPRESSION_STATEMENT)
-                                            || returnStatement.getReturnValue().toString().equals(SyntacticTypes.ARRAY_EXPRESSION_STATEMENT)
-                                            || (returnStatement.getReturnValue().isLeaf() && ((Lexeme) returnStatement.getReturnValue()).getWord().equals("null"))
-                                            || (returnStatement.getReturnValue().isLeaf() && ((Lexeme) returnStatement.getReturnValue()).getWord().equals("NaN"))
-                                            || (returnStatement.getReturnValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
-                                            && !rootContext.getFunction((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getReturnType().getWord().equals("void")))))) {
-
-                                        throw new SemanticError("el tipo de retorno "
-                                                + "" + lexeme.getWord() + " de la funcion "
-                                                + "" + ((Lexeme) child.childs.get(2)).getWord() + ""
-                                                + " no coincide con el valor de una "
-                                                + returnStatement.getReturnValue().toString() + "\nen la posicion "
-                                                + lexeme.getRow() + ":" + lexeme.getColumn());
-                                    }
-                                } catch (NullPointerException e) {
-                                    throw new SemanticError("La funcion con el nombre " + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getWord() + " no existe "
-                                            + "\nen la posicion " + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getRow() + ":" + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getColumn());
-                                }
+                                this.validateDataTypeStatement(returnStatement.getReturnValue(), lexeme, child, rootContext);
                             } else if (returnStatement != null && lexeme.getWord().equals("void")) {
                                 throw new SemanticError("La funcion con el nombre " + ((Lexeme) child.childs.get(2)).getWord() + " tiene un tipo de retorno void y tiene una sentencia de retorno "
                                         + "\nen la posicion " + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getRow() + ":" + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getColumn());
@@ -331,6 +288,54 @@ public abstract class Statement implements TreeNode {
             } else {
                 this.validateVariables(grandchild, rootContext);
             }
+        }
+    }
+
+    private void validateDataTypeStatement(Statement statement, Lexeme datatype, Statement child, Context rootContext) {
+        try {
+            if (!((datatype.getWord().equals("number")
+                    && (statement.toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
+                    || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("NaN"))
+                    || (statement.toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
+                    && (rootContext.getFunction((Lexeme) statement.getChildAt(0))
+                            .getReturnType().getWord().equals("number")))))
+                    || (datatype.getWord().equals("Array")
+                    && (statement.toString().equals(SyntacticTypes.ARRAY_EXPRESSION_STATEMENT)
+                    || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("null"))
+                    || (statement.toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
+                    && (rootContext.getFunction((Lexeme) statement.getChildAt(0))
+                            .getReturnType().getWord().equals("Array")))))
+                    || (datatype.getWord().equals("string")
+                    && (statement.toString().equals(SyntacticTypes.STRING_EXPRESSION_STATEMENT)
+                    || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("null"))
+                    || (statement.toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
+                    && (rootContext.getFunction((Lexeme) statement.getChildAt(0))
+                            .getReturnType().getWord().equals("string")))))
+                    || (datatype.getWord().equals("boolean")
+                    && (statement.toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
+                    || (statement.toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
+                    && (rootContext.getFunction((Lexeme) statement.getChildAt(0))
+                            .getReturnType().getWord().equals("boolean")))))
+                    || (datatype.getWord().equals("any")
+                    && (statement.toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
+                    || statement.toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
+                    || statement.toString().equals(SyntacticTypes.STRING_EXPRESSION_STATEMENT)
+                    || statement.toString().equals(SyntacticTypes.ARRAY_EXPRESSION_STATEMENT)
+                    || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("null"))
+                    || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("NaN"))
+                    || (statement.toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
+                    && !rootContext.getFunction((Lexeme) statement.getChildAt(0)).getReturnType().getWord().equals("void")))))) {
+
+                throw new SemanticError("el tipo de retorno "
+                        + "" + datatype.getWord() + " de la funcion "
+                        + "" + ((Lexeme) child.childs.get(2)).getWord() + ""
+                        + " no coincide con el valor de una "
+                        + statement.toString() + "\nen la posicion "
+                        + datatype.getRow() + ":" + datatype.getColumn());
+            }
+        } catch (NullPointerException e) {
+            throw new SemanticError("La funcion con el nombre " + ((Lexeme) statement.getChildAt(0)).getWord() + " no existe "
+                    + "\nen la posicion " + ((Lexeme) statement.getChildAt(0)).getRow() + ":" + ((Lexeme) statement.getChildAt(0)).getColumn());
         }
     }
 }

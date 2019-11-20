@@ -159,9 +159,8 @@ public class Context {
     public void validateExiststVariable(Lexeme identifier) {
         Variable var = this.getVariable(identifier);
         if (var != null) {
-            if (!var.getDataType().getWord().equals("number")) {
-                throw new SemanticError("no se puede incrementar o decrementar una variable de tipo "
-                        + var.getDataType().getWord());
+            if (!var.getDataType().getWord().equals("Array")) {
+                this.validateDataTypeVariable(var);
             }
         } else {
             throw new SemanticError("La variable con el nombre "
@@ -198,30 +197,12 @@ public class Context {
         return varReturn;
     }
 
-    private Variable getVariableChildsContext(Lexeme identifier) {
-        Variable var = new Variable(this), varReturn = null;
-        var.setIdentifier(identifier);
-        for (Context context : this.childsContexts) {
-            for (Variable auxVar : context.getVariables()) {
-                if (auxVar.getIdentifier().getWord().equals(var.getIdentifier().getWord())) {
-                    varReturn = auxVar;
-                    break;
-                }
-            }
-        }
-        return varReturn;
-    }
-
     public Variable getVariable(Lexeme identifier) {
         Variable varReturn = this.getVariableContextParent(identifier);
         if (varReturn != null) {
             return varReturn;
         }
         varReturn = this.getVariableContext(identifier);
-        if (varReturn != null) {
-            return varReturn;
-        }
-        varReturn = this.getVariableChildsContext(identifier);
         return varReturn;
     }
 
@@ -254,30 +235,12 @@ public class Context {
         return functionReturn;
     }
 
-    private Function getFunctionChildsContexts(Lexeme identifier) {
-        Function function = new Function(this), functionReturn = null;
-        function.setIdentifier(identifier);
-        for (Context context : this.childsContexts) {
-            for (Function auxFunction : context.getFunctions()) {
-                if (auxFunction.getIdentifier().getWord().equals(function.getIdentifier().getWord())) {
-                    functionReturn = auxFunction;
-                    break;
-                }
-            }
-        }
-        return functionReturn;
-    }
-
     public Function getFunction(Lexeme identifier) {
         Function functionReturn = this.getFunctionContextParent(identifier);
         if (functionReturn != null) {
             return functionReturn;
         }
         functionReturn = this.getFunctionContext(identifier);
-        if (functionReturn != null) {
-            return functionReturn;
-        }
-        functionReturn = this.getFunctionChildsContexts(identifier);
         return functionReturn;
     }
 
@@ -309,13 +272,11 @@ public class Context {
     }
 
     public void addFunction(Function function) {
-        if (this.getFunctionContextParent(function.getIdentifier()) != null
-                || this.getFunctionContext(function.getIdentifier()) != null) {
+        if (this.getFunction(function.getIdentifier()) != null) {
             throw new SemanticError("ya existe una funcion con el nombre de "
                     + function.getIdentifier().getWord() + "\nen la posicion "
                     + function.getReturnType().getRow() + ":" + function.getReturnType().getColumn());
-        } else if (this.getVariableContextParent(function.getIdentifier()) != null
-                || this.getVariableContext(function.getIdentifier()) != null) {
+        } else if (this.getVariable(function.getIdentifier()) != null) {
             throw new SemanticError("ya existe una variable con el nombre de "
                     + function.getIdentifier().getWord() + "\nen la posicion " + function.getReturnType().getRow()
                     + ":" + function.getReturnType().getColumn());

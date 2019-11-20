@@ -11,6 +11,8 @@ import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_sintactico.Models.Statements.Structure.TokensFlow;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import eam.analizador_sintactico.Models.Statements.Expressions.ExpressionStatement;
+import eam.analizador_sintactico.Models.Statements.Expressions.NumericExpressionStatement;
+import eam.analizador_sintactico.Models.Statements.Expressions.StringExpressionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.ArrowFunctionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.InvokeFunctionStatement;
 import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
@@ -22,13 +24,24 @@ import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
 public class SimpleAssignmentStatement extends Statement {
 
     private Statement expression;
+    private boolean arrayAssigment;
 
     public SimpleAssignmentStatement(Statement root) {
         super(root);
+        this.arrayAssigment = false;
     }
 
     public SimpleAssignmentStatement(Statement root, int positionBack) {
         super(root, positionBack);
+        this.arrayAssigment = false;
+    }
+
+    public boolean isArrayAssigment() {
+        return arrayAssigment;
+    }
+
+    public void setArrayAssigment(boolean arrayAssigment) {
+        this.arrayAssigment = arrayAssigment;
     }
 
     @Override
@@ -47,7 +60,49 @@ public class SimpleAssignmentStatement extends Statement {
             this.childs.add(lexeme);
             lexeme = tokensFlow.move();
 
-            if (lexeme.getType().equals(LexemeTypes.ASSIGNMENT_OPERATORS)
+            if (lexeme != null && lexeme.getType().equals(LexemeTypes.OPEN_BRACKETS)) {
+                this.arrayAssigment = true;
+                this.childs.add(lexeme);
+                lexeme = tokensFlow.move();
+
+                InvokeFunctionStatement invokeFunctionStatement = new InvokeFunctionStatement(this, tokensFlow.getPositionCurrent());
+                invokeFunctionStatement = (InvokeFunctionStatement) invokeFunctionStatement.analyze(tokensFlow, lexeme);
+
+                if (invokeFunctionStatement != null) {
+                    this.childs.add(invokeFunctionStatement);
+                    lexeme = tokensFlow.getCurrentToken();
+                } else {
+                    NumericExpressionStatement numericExpressionStatement = new NumericExpressionStatement(this, tokensFlow.getPositionCurrent());
+                    numericExpressionStatement = (NumericExpressionStatement) numericExpressionStatement.analyze(tokensFlow, lexeme);
+
+                    if (numericExpressionStatement != null) {
+                        this.childs.add(numericExpressionStatement);
+                        lexeme = tokensFlow.getCurrentToken();
+                    } else {
+                        StringExpressionStatement stringExpressionStatement = new StringExpressionStatement(this, tokensFlow.getPositionCurrent());
+                        stringExpressionStatement = (StringExpressionStatement) stringExpressionStatement.analyze(tokensFlow, lexeme);
+
+                        if (stringExpressionStatement != null) {
+                            this.childs.add(stringExpressionStatement);
+                            lexeme = tokensFlow.getCurrentToken();
+                        } else if (lexeme != null && lexeme.getType().equals(LexemeTypes.IDENTIFIERS)) {
+                            this.childs.add(lexeme);
+                            lexeme = tokensFlow.move();
+                        } else {
+                            throw new SyntaxError("[Error] : "
+                                    + tokensFlow.getCurrentToken().toString()
+                                    + " se esperaba una expresion valida para acceder a un index del array ");
+                        }
+                    }
+                }
+
+                if (lexeme != null && lexeme.getType().equals(LexemeTypes.CLOSE_BRACKETS)) {
+                    this.childs.add(lexeme);
+                    lexeme = tokensFlow.move();
+                }
+            }
+
+            if (lexeme != null && lexeme.getType().equals(LexemeTypes.ASSIGNMENT_OPERATORS)
                     && lexeme.getWord().equals("=")) {
                 this.childs.add(lexeme);
                 lexeme = tokensFlow.move();
@@ -82,7 +137,7 @@ public class SimpleAssignmentStatement extends Statement {
                         }
                     }
                 }
-            } else if ((!lexeme.getType().equals(LexemeTypes.ASSIGNMENT_OPERATORS) || !(lexeme.getType().equals(LexemeTypes.ASSIGNMENT_OPERATORS)
+            } else if (lexeme != null && (!lexeme.getType().equals(LexemeTypes.ASSIGNMENT_OPERATORS) || !(lexeme.getType().equals(LexemeTypes.ASSIGNMENT_OPERATORS)
                     && lexeme.getWord().equals("="))) && !lexeme.getType().equals(LexemeTypes.DELIMITERS)) {
                 if (this.positionBack != -1) {
                     tokensFlow.moveTo(this.positionBack);
@@ -101,7 +156,7 @@ public class SimpleAssignmentStatement extends Statement {
                 if (lexeme == null) {
                     lexeme = tokensFlow.moveTo(tokensFlow.getPositionCurrent() - 1);
                     throw new SyntaxError("[Error] : "
-                            + "se esperaba un ; al final de " + this.toString() 
+                            + "se esperaba un ; al final de " + this.toString()
                             + " posicion: row: " + lexeme.getRow() + " - columna: " + lexeme.getColumn());
                 } else {
                     throw new SyntaxError("[Error] : "

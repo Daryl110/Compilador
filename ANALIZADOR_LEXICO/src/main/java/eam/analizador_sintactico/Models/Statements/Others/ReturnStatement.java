@@ -21,12 +21,20 @@ import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
  */
 public class ReturnStatement extends Statement {
 
+    private Statement returnValue;
+    
     public ReturnStatement(Statement root) {
         super(root);
+        returnValue = null;
     }
 
     public ReturnStatement(Statement root, int positionBack) {
         super(root, positionBack);
+        returnValue = null;
+    }
+
+    public Statement getReturnValue() {
+        return returnValue;
     }
 
     @Override
@@ -46,24 +54,28 @@ public class ReturnStatement extends Statement {
                     && (lexeme.getWord().equals("NaN") || lexeme.getWord().equals("null")))) {
                 this.childs.add(lexeme);
                 lexeme = tokensFlow.move();
+                this.returnValue = lexeme;
             } else {
                 Statement expression = new ExpressionStatement(this, tokensFlow.getPositionCurrent());
                 expression = expression.analyze(tokensFlow, lexeme);
                 if (expression != null) {
                     this.childs.add(expression);
                     lexeme = tokensFlow.getCurrentToken();
+                    this.returnValue = expression;
                 } else {
                     Statement invokeFunction = new InvokeFunctionStatement(this, tokensFlow.getPositionCurrent());
                     invokeFunction = invokeFunction.analyze(tokensFlow, lexeme);
                     if (invokeFunction != null) {
                         this.childs.add(invokeFunction);
                         lexeme = tokensFlow.getCurrentToken();
+                        this.returnValue = invokeFunction;
                     } else {
                         Statement arrowFunction = new ArrowFunctionStatement(this, tokensFlow.getPositionCurrent());
                         arrowFunction = arrowFunction.analyze(tokensFlow, lexeme);
                         if (arrowFunction != null) {
                             this.childs.add(arrowFunction);
                             lexeme = tokensFlow.getCurrentToken();
+                            this.returnValue = arrowFunction;
                         } else {
                             throw new SyntaxError("[Error] : "
                                     + tokensFlow.getCurrentToken().toString()

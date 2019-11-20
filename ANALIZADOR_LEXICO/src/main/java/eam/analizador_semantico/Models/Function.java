@@ -24,6 +24,7 @@ public class Function {
 
     public Function(Context context) {
         this.parameters = new ArrayList<>();
+        this.context = context;
     }
 
     public Context getContext() {

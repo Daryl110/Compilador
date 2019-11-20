@@ -22,6 +22,6 @@ public class SemanticAnalyzer {
     }
     
     public Context analyze() {
-        return this.root.generateContext(null);
+        return this.root.generateContext(null, null);
     }
 }

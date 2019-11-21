@@ -50,4 +50,9 @@ public class CompilationUnit extends Statement {
     public boolean withContext() {
         return true;
     }
+    
+    @Override
+    public String parse() {
+        return this.childs.stream().map((child) -> child.parse()+"\n").reduce("", String::concat);
+    }
 }

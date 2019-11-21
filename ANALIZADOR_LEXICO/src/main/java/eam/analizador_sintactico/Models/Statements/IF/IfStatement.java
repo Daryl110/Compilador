@@ -170,6 +170,9 @@ public class IfStatement extends Statement {
         return true;
     }
     
-    
+    @Override
+    public String parse() {
+        return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
+    }
 
 }

@@ -89,5 +89,13 @@ public class Lexeme extends Statement {
     public boolean withContext() {
         return false;
     }
+
+    @Override
+    public String parse() {
+        if (this.type.equals(LexemeTypes.DATA_TYPE)) {
+            return "var";
+        }
+        return this.word;
+    }
     
 }

@@ -162,5 +162,20 @@ public class UntilStatement extends Statement {
     public boolean withContext() {
         return true;
     }
+    
+    @Override
+    public String parse() {
+        String parseo = "";
+        for(Statement child : this.childs){
+            if (((Lexeme)child).getWord().equals("until")) {
+                parseo += " while ";
+            }else if (((Lexeme)child).getType().equals(LexemeTypes.OPEN_PARENTHESIS)) {
+                parseo += child.parse()+"!";
+            }else{
+                parseo += child.parse();
+            }
+        }
+        return parseo;
+    }
 
 }

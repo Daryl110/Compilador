@@ -171,5 +171,10 @@ public class ForStatement extends Statement {
     public boolean withContext() {
         return true;
     }
+    
+    @Override
+    public String parse() {
+        return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
+    }
 
 }

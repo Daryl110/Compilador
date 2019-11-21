@@ -54,5 +54,15 @@ public class ParameterStatement extends Statement {
     public boolean withContext() {
         return false;
     }
+    
+    @Override
+    public String parse() {
+        return this.childs
+                .stream()
+                .filter(
+                        (child) -> (!((Lexeme)child).getType().equals(LexemeTypes.DATA_TYPE)))
+                .map((child) -> child.parse()+" ")
+                .reduce("", String::concat);
+    }
 
 }

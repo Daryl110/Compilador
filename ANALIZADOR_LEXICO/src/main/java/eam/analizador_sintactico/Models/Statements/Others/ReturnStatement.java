@@ -105,4 +105,9 @@ public class ReturnStatement extends Statement {
         return false;
     }
 
+    @Override
+    public String parse() {
+        return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
+    }
+
 }

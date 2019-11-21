@@ -389,9 +389,11 @@ public class FrmMain extends javax.swing.JFrame {
                 this.semanticAnalyzerController.analyze();
                 this.tblVariables.setModel(this.semanticAnalyzerController.getVariables());
                 this.tblFuntions.setModel(this.semanticAnalyzerController.getFunctions());
-            }catch(SemanticError e){
+            }catch(SemanticError | SyntaxError e){
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }
+            
+            System.out.println(this.semanticAnalyzerController.parsear());
         }catch(SyntaxError e){
             JOptionPane.showMessageDialog(this, e.getMessage());
         }

@@ -202,5 +202,10 @@ public class NumericExpressionStatement extends Statement {
     public boolean withContext() {
         return false;
     }
+    
+    @Override
+    public String parse() {
+        return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
+    }
 
 }

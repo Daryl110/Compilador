@@ -7,11 +7,9 @@ package eam.analizador_semantico.Controllers;
 
 import eam.analizador_semantico.Models.Context;
 import eam.analizador_semantico.Models.Function;
-import eam.analizador_semantico.Models.Parameter;
 import eam.analizador_semantico.Models.SemanticAnalyzer;
 import eam.analizador_semantico.Models.Variable;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
-import java.util.function.Consumer;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -26,6 +24,10 @@ public class SemanticAnalyzerController {
 
     public SemanticAnalyzerController(Statement root) {
         this.semanticAnalyzer = new SemanticAnalyzer(root);
+    }
+    
+    public String parsear(){
+        return this.semanticAnalyzer.getRoot().parse();
     }
     
     public void analyze(){

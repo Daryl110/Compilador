@@ -21,6 +21,10 @@ public class SemanticAnalyzer {
         this.root = root;
     }
     
+    public Statement getRoot(){
+        return this.root;
+    }
+    
     public Context analyze() {
         return this.root.generateContext(null, null);
     }

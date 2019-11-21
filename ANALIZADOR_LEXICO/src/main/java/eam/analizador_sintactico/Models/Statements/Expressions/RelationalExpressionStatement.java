@@ -16,7 +16,7 @@ import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
 /**
  *
  * @author Daryl Ospina
- * 
+ *
  */
 public class RelationalExpressionStatement extends Statement {
 
@@ -55,30 +55,31 @@ public class RelationalExpressionStatement extends Statement {
             this.childs.add(invokeFunction);
             return this.recursiveAnalyze(tokensFlow, tokensFlow.getCurrentToken());
         } else {
-            Statement numeric = new NumericExpressionStatement(this, tokensFlow.getPositionCurrent());
-            numeric = numeric.analyze(tokensFlow, lexeme);
-            if (numeric != null) {
-                this.childs.add(numeric);
-                return this.recursiveAnalyze(tokensFlow, tokensFlow.getCurrentToken());
+            if (lexeme != null && ((lexeme.getType().equals(LexemeTypes.OTHERS)
+                && (lexeme.getWord().equals("true") || lexeme.getWord().equals("false")))
+                    || (lexeme.getType().equals(LexemeTypes.IDENTIFIERS)))) {
+                this.childs.add(lexeme);
+                return this.recursiveAnalyze(tokensFlow, tokensFlow.move());
             } else {
-                Statement string = new StringExpressionStatement(this, tokensFlow.getPositionCurrent());
-                string = string.analyze(tokensFlow, lexeme);
-                if (string != null) {
-                    this.childs.add(string);
+                Statement numeric = new NumericExpressionStatement(this, tokensFlow.getPositionCurrent());
+                numeric = numeric.analyze(tokensFlow, lexeme);
+                if (numeric != null) {
+                    this.childs.add(numeric);
                     return this.recursiveAnalyze(tokensFlow, tokensFlow.getCurrentToken());
                 } else {
-                    int size = this.childs.size() - 1;
-                    if (size > 0) {
-                        if (((Lexeme) (this.childs.get(size))).getType().equals(LexemeTypes.RELATIONAL_OPERATORS)) {
-                            throw new SyntaxError("la expresion relacional no puede terminar con un operador");
-                        }
-                    }
-                    if (this.positionBack != -1) {
-                        tokensFlow.moveTo(this.positionBack);
+                    Statement string = new StringExpressionStatement(this, tokensFlow.getPositionCurrent());
+                    string = string.analyze(tokensFlow, lexeme);
+                    if (string != null) {
+                        this.childs.add(string);
+                        return this.recursiveAnalyze(tokensFlow, tokensFlow.getCurrentToken());
                     } else {
-                        tokensFlow.backTrack();
+                        if (this.positionBack != -1) {
+                            tokensFlow.moveTo(this.positionBack);
+                        } else {
+                            tokensFlow.backTrack();
+                        }
+                        return null;
                     }
-                    return null;
                 }
             }
         }
@@ -126,4 +127,8 @@ public class RelationalExpressionStatement extends Statement {
         return false;
     }
 
+    @Override
+    public String parse() {
+        return this.childs.stream().map((child) -> child.parse() + " ").reduce("", String::concat);
+    }
 }

@@ -63,12 +63,6 @@ public class LogicalExpressionStatement extends Statement {
                 return this.recursiveAnalyze(tokensFlow, tokensFlow.move());
             }
         } else {
-            int size = this.childs.size() - 1;
-            if (size > 0) {
-                if (((Lexeme) (this.childs.get(size))).getType().equals(LexemeTypes.LOGICAL_OPERATORS)) {
-                    throw new SyntaxError("la expresion logica no puede terminar con un operador");
-                }
-            }
             if (this.positionBack != -1) {
                 tokensFlow.moveTo(this.positionBack);
             } else {
@@ -118,6 +112,11 @@ public class LogicalExpressionStatement extends Statement {
     @Override
     public boolean withContext() {
         return false;
+    }
+    
+    @Override
+    public String parse() {
+        return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
     }
 
 }

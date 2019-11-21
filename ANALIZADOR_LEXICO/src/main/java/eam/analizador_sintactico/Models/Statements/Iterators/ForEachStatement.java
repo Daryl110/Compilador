@@ -176,4 +176,19 @@ public class ForEachStatement extends Statement {
     public boolean withContext() {
         return true;
     }
+    
+    @Override
+    public String parse() {
+        String parseo = "";
+        
+        for(Statement child : this.childs){
+            if (child.isLeaf() && ((Lexeme)child).getWord().equals(":")) {
+                parseo += " of ";
+            }else{
+                parseo += child.parse()+" ";
+            }
+        }
+        
+        return parseo;
+    }
 }

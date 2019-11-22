@@ -9,6 +9,13 @@ import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_lexico.Models.LexemeTypes;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_semantico.Exceptions.SemanticError;
+import eam.analizador_sintactico.Models.Statements.Assignment.OthersAssignmentsStatement;
+import eam.analizador_sintactico.Models.Statements.Assignment.SimpleAssignmentStatement;
+import eam.analizador_sintactico.Models.Statements.Expressions.NumericExpressionStatement;
+import eam.analizador_sintactico.Models.Statements.Functions.FunctionStatement;
+import eam.analizador_sintactico.Models.Statements.Functions.ParameterStatement;
+import eam.analizador_sintactico.Models.Statements.Iterators.ForEachStatement;
+import eam.analizador_sintactico.Models.Statements.Others.ReturnStatement;
 import eam.analizador_sintactico.Models.Statements.Structure.SyntacticTypes;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,6 +40,81 @@ public class Context {
         this.functions = new ArrayList<>();
         this.childsContexts = new ArrayList<>();
         this.parent = null;
+    }
+    
+    public void addDefaultFunctions(){
+       this.addSumFunction();
+    }
+    
+    private void addSumFunction(){
+        Statement sum = new FunctionStatement(this.statement);
+        Statement forEachStatement = new ForEachStatement(sum);
+        Statement assignment1 = new SimpleAssignmentStatement(sum);
+        Statement assignment2 = new OthersAssignmentsStatement(forEachStatement);
+        ReturnStatement returnStatement = new ReturnStatement(sum);
+        Statement paramStatement = new ParameterStatement(sum);
+        Statement numericExpression1 = new NumericExpressionStatement(assignment1);
+        Statement numericExpression2 = new NumericExpressionStatement(assignment2);
+        Statement numericExpression3 = new NumericExpressionStatement(returnStatement);
+        
+        sum.addChild(new Lexeme(-1, -1, "function", LexemeTypes.FUNCTIONS));
+        sum.addChild(new Lexeme(-1, -1, "number", LexemeTypes.DATA_TYPE));
+        sum.addChild(new Lexeme(-1, -1, "sum", LexemeTypes.IDENTIFIERS));
+        sum.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        
+        paramStatement.addChild(new Lexeme(-1, -1, "Array", LexemeTypes.DATA_TYPE));
+        paramStatement.addChild(new Lexeme(-1, -1, "array", LexemeTypes.IDENTIFIERS));
+        
+        sum.addChild(paramStatement);
+        sum.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        sum.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        
+        assignment1.addChild(new Lexeme(-1, -1, "number", LexemeTypes.DATA_TYPE));
+        assignment1.addChild(new Lexeme(-1, -1, "suma", LexemeTypes.IDENTIFIERS));
+        assignment1.addChild(new Lexeme(-1, -1, "=", LexemeTypes.ASSIGNMENT_OPERATORS));
+        
+        numericExpression1.addChild(new Lexeme(-1, -1, "0", LexemeTypes.NUMBERS));
+        
+        assignment1.addChild(numericExpression1);
+        assignment1.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        sum.addChild(assignment1);
+        
+        forEachStatement.addChild(new Lexeme(-1, -1, "for", LexemeTypes.ITERATIVE_CONTROL_STRUCTURE));
+        forEachStatement.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        forEachStatement.addChild(new Lexeme(-1, -1, "any", LexemeTypes.DATA_TYPE));
+        forEachStatement.addChild(new Lexeme(-1, -1, "item", LexemeTypes.IDENTIFIERS));
+        forEachStatement.addChild(new Lexeme(-1, -1, ":", LexemeTypes.OTHERS));
+        forEachStatement.addChild(new Lexeme(-1, -1, "array", LexemeTypes.IDENTIFIERS));
+        forEachStatement.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        forEachStatement.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        
+        assignment2.addChild(new Lexeme(-1, -1, "suma", LexemeTypes.IDENTIFIERS));
+        assignment2.addChild(new Lexeme(-1, -1, "+=", LexemeTypes.ASSIGNMENT_OPERATORS));
+        assignment2.addChild(new Lexeme(-1, -1, "", LexemeTypes.ASSIGNMENT_OPERATORS));
+        
+        numericExpression2.addChild(new Lexeme(-1, -1, "item", LexemeTypes.IDENTIFIERS));
+        
+        assignment2.addChild(numericExpression2);
+        assignment2.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        forEachStatement.addChild(assignment2);
+        forEachStatement.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
+        
+        sum.addChild(forEachStatement);
+        
+        returnStatement.addChild(new Lexeme(-1, -1, "return", LexemeTypes.FUNCTIONS));
+        
+        numericExpression3.addChild(new Lexeme(-1, -1, "suma", LexemeTypes.IDENTIFIERS));
+        
+        returnStatement.addChild(numericExpression3);
+        returnStatement.setReturnValue(numericExpression3);
+        returnStatement.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        sum.addChild(returnStatement);
+        sum.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
+        
+        this.statement.getChilds().add(0, sum);
     }
 
     public Context(Context parent, Statement statement) {
@@ -62,8 +144,7 @@ public class Context {
     public boolean addVariable(Variable var) {
         this.validateVariableParentContext(var);
         Context aux = this.getParent();
-        Function func1 = this.getFunctionContextParent(var.getIdentifier()),
-                func2 = this.getFunctionContext(var.getIdentifier());
+        
         while (aux != null) {
             if (aux.validateVariableParentContext(var)) {
                 return true;
@@ -74,21 +155,32 @@ public class Context {
             this.validateDataTypeVariable(var);
         } else if (var.getDataType() == null) {
             this.validateExiststVariable(var.getIdentifier());
+            Variable auxVar = this.getVariable(var.getIdentifier());
+            auxVar.setValue(var.getValue());
+            this.validateFunctionExists(var.getIdentifier());
+            return true;
         } else if (this.getFunction(var.getIdentifier()) != null) {
             throw new SemanticError("ya existe una funcion con el nombre de "
                     + var.getIdentifier().getWord() + "\nen la posicion "
                     + var.getDataType().getRow() + ":"
                     + var.getDataType().getColumn());
+        }else if(var.getValue() == null && var.getIdentifier() != null && var.getDataType() != null){
+            var.setValue(new Lexeme(-1, -1, "null", LexemeTypes.OTHERS));
+            this.validateDataTypeVariable(var);
         }
         
-        if (func1 != null
-                || func2 != null) {
-            throw new SemanticError("ya existe una funcion con el nombre de "
-                    + (func1 != null ? func1.getIdentifier().getWord() : func2.getIdentifier().getWord()) + "\nen la posicion "
-                    + (func1 != null ? func1.getReturnType().getRow() : func2.getReturnType().getRow()) + ":"
-                    + (func1 != null ? func1.getReturnType().getColumn() : func2.getReturnType().getColumn()));
-        }
+        this.validateFunctionExists(var.getIdentifier());
         return this.variables.add(var);
+    }
+    
+    private void validateFunctionExists(Lexeme identifier){
+        Function func = this.getFunction(identifier);
+        if (func != null) {
+            throw new SemanticError("ya existe una funcion con el nombre de "
+                    + func.getIdentifier().getWord() + "\nen la posicion "
+                    + func.getReturnType().getRow() + ":"
+                    + func.getReturnType().getColumn());
+        }
     }
 
     public boolean addChildContext(Context childContext) {
@@ -100,6 +192,7 @@ public class Context {
                 && var.getDataType().getWord().equals("number"))
                 && (var.getValue().toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
                 || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("NaN"))
+                || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("null"))
                 || var.getValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)))
                 || ((var.getDataType().getType().equals(LexemeTypes.DATA_TYPE)
                 && var.getDataType().getWord().equals("Array"))
@@ -115,6 +208,7 @@ public class Context {
                 && var.getDataType().getWord().equals("boolean"))
                 && (var.getValue().toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
                 || var.getValue().toString().equals(SyntacticTypes.RELATIONAL_EXPRESSION_STATEMENT)
+                || (var.getValue().isLeaf() && ((Lexeme) (var.getValue())).getWord().equals("null"))
                 || var.getValue().toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT))))
                 || (((var.getDataType().getType().equals(LexemeTypes.DATA_TYPE)
                 && var.getDataType().getWord().equals("any"))

@@ -119,6 +119,9 @@ public abstract class Statement implements TreeNode {
 
     public Context generateContext(Context parent, Context current) {
         Context rootContext = new Context(parent, this);
+        if (parent == null) {
+            rootContext.addDefaultFunctions();
+        }
         if (current != null) {
             rootContext = current;
         }
@@ -133,7 +136,7 @@ public abstract class Statement implements TreeNode {
                 this.validateInvokeFunction(child, rootContext);
             } else if (child.toString().equals(SyntacticTypes.FUNCTION_STATEMENT)) {
                 this.validateCreateFunction(child, rootContext);
-            } else if (child.toString().equals(SyntacticTypes.FOR_EACH_STATEMENT) && current == null) {
+            } else if (child.toString().equals(SyntacticTypes.FOR_EACH_STATEMENT)) {
                 this.validateCreateVariableInForEach(child, rootContext);
             } else if (!child.isLeaf() && child.withContext()) {
                 rootContext.addChildContext(child.generateContext(rootContext, null));
@@ -251,6 +254,7 @@ public abstract class Statement implements TreeNode {
                     for (Statement grandChild1 : child.childs) {
                         if (grandChild1.toString().equals(SyntacticTypes.RETURN_STATEMENT)) {
                             returnStatement = (ReturnStatement) grandChild1;
+                            break;
                         }
                     }
 
@@ -352,6 +356,7 @@ public abstract class Statement implements TreeNode {
             if (!((datatype.getWord().equals("number")
                     && (statement.toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)
                     || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("NaN"))
+                    || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("null"))
                     || (statement.toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
                     && (rootContext.getFunction((Lexeme) statement.getChildAt(0))
                             .getReturnType().getWord().equals("number")))))
@@ -370,6 +375,7 @@ public abstract class Statement implements TreeNode {
                     || (datatype.getWord().equals("boolean")
                     && (statement.toString().equals(SyntacticTypes.LOGICAL_EXPRESSION_STATEMENT)
                     || statement.toString().equals(SyntacticTypes.RELATIONAL_EXPRESSION_STATEMENT)
+                    || (statement.isLeaf() && ((Lexeme) statement).getWord().equals("null"))
                     || (statement.toString().equals(SyntacticTypes.INVOKE_FUNCTION_STATMENT)
                     && (rootContext.getFunction((Lexeme) statement.getChildAt(0))
                             .getReturnType().getWord().equals("boolean")))))
@@ -412,6 +418,19 @@ public abstract class Statement implements TreeNode {
                                 throw new SemanticError("la funcion " + func.getIdentifier().getWord()
                                         + " no tiene parametros pero se le estan enviando."
                                         + "\nen la posicion " + func.getIdentifier().getRow() + ":" + func.getIdentifier().getColumn());
+                            }
+                            if (varIdentifier.getChildCount() == 1 && varIdentifier.getChildAt(0).isLeaf()) {
+                                if (((Lexeme)varIdentifier.getChildAt(0)).getType().equals(LexemeTypes.IDENTIFIERS)) {
+                                    Variable var = rootContext.getVariable(((Lexeme)varIdentifier.getChildAt(0)));
+                                    this.validateDataTypeStatement(var.getValue(), func.getParameters().get(aux).getDataType(), child, rootContext,
+                                    "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()
+                                    + " es de tipo " + func.getParameters().get(aux).getDataType().getWord()
+                                    + " y el valor que se le esta enviando es de tipo "
+                                    + var.getDataType().getWord()
+                                    + " en la posicion " + identifier.getRow() + ":" + identifier.getColumn());
+                                    aux++;
+                                    continue;
+                                }
                             }
                             this.validateDataTypeStatement(varIdentifier, func.getParameters().get(aux).getDataType(), child, rootContext,
                                     "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()

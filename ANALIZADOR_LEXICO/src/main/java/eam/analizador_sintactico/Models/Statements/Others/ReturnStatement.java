@@ -32,6 +32,10 @@ public class ReturnStatement extends Statement {
         super(root, positionBack);
         returnValue = null;
     }
+    
+    public void setReturnValue(Statement returnValue){
+        this.returnValue = returnValue;
+    }
 
     public Statement getReturnValue() {
         return returnValue;

@@ -170,7 +170,17 @@ public class FunctionStatement extends Statement {
     
     @Override
     public String parse() {
-        return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
+        String parse = "";
+        for(Statement child : this.childs){
+            if (child.isLeaf()) {
+                if (((Lexeme)child).getType().equals(LexemeTypes.DATA_TYPE)
+                        ||((Lexeme)child).getWord().equals("void")) {
+                    continue;
+                }
+            }
+            parse += child.parse()+" ";
+        }
+        return parse;
     }
 
 }

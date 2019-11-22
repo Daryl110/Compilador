@@ -13,6 +13,7 @@ import eam.analizador_sintactico.Models.Statements.Assignment.OthersAssignmentsS
 import eam.analizador_sintactico.Models.Statements.Assignment.SimpleAssignmentStatement;
 import eam.analizador_sintactico.Models.Statements.Expressions.NumericExpressionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.FunctionStatement;
+import eam.analizador_sintactico.Models.Statements.Functions.InvokeFunctionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.ParameterStatement;
 import eam.analizador_sintactico.Models.Statements.Iterators.ForEachStatement;
 import eam.analizador_sintactico.Models.Statements.Others.ReturnStatement;
@@ -43,6 +44,7 @@ public class Context {
     }
     
     public void addDefaultFunctions(){
+       this.addLogFunction();
        this.addSumFunction();
     }
     
@@ -115,6 +117,26 @@ public class Context {
         sum.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
         
         this.statement.getChilds().add(0, sum);
+    }
+    
+    private void addLogFunction(){
+        
+        Statement log = new FunctionStatement(this.statement);
+        Statement paramStatement = new ParameterStatement(log);
+        
+        log.addChild(new Lexeme(-1, -1, "function", LexemeTypes.FUNCTIONS));
+        log.addChild(new Lexeme(-1, -1, "void", LexemeTypes.FUNCTIONS));
+        log.addChild(new Lexeme(-1, -1, "log", LexemeTypes.IDENTIFIERS));
+        log.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        
+        paramStatement.addChild(new Lexeme(-1, -1, "any", LexemeTypes.DATA_TYPE));
+        paramStatement.addChild(new Lexeme(-1, -1, "data", LexemeTypes.IDENTIFIERS));
+        
+        log.addChild(paramStatement);
+        log.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        log.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        
+        this.statement.getChilds().add(0, log);
     }
 
     public Context(Context parent, Statement statement) {

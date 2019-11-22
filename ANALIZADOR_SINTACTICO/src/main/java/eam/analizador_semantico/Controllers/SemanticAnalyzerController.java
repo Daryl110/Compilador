@@ -5,11 +5,16 @@
  */
 package eam.analizador_semantico.Controllers;
 
+import eam.analizador_lexico.Models.Lexeme;
 import eam.analizador_semantico.Models.Context;
 import eam.analizador_semantico.Models.Function;
 import eam.analizador_semantico.Models.SemanticAnalyzer;
 import eam.analizador_semantico.Models.Variable;
 import eam.analizador_sintactico.Models.Statements.Structure.Statement;
+import eam.gui_compilador.util.Tools;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -26,7 +31,7 @@ public class SemanticAnalyzerController {
         this.semanticAnalyzer = new SemanticAnalyzer(root);
     }
     
-    public String parsear(){
+    private String parsear(){
         return this.semanticAnalyzer.getRoot().parse();
     }
     
@@ -53,7 +58,7 @@ public class SemanticAnalyzerController {
             model.addRow(new Object[]{
                 var.getDataType().getWord(),
                 var.getIdentifier().getWord(),
-                var.getValue() == null ? "null" : var.getValue().toString(),
+                var.getValue() == null ? "null" : (var.getValue().isLeaf() ? ((Lexeme)var.getValue()).getWord() : var.getValue().toString()),
                 context.getStatement().toString(),
                 context.getParent() == null ? "null" : context.getParent().getStatement().toString()
             });
@@ -98,5 +103,32 @@ public class SemanticAnalyzerController {
         context.getChildsContexts().forEach((childContext) -> {
             generateRowsModelFunctions(childContext, model);
         });
+    }
+    
+    public String execute(String route) throws IOException{
+        String code = this.parsear(), output = "";
+        byte[] contents = new byte[1024];
+        int byteRead = 0;
+        
+        Tools.writeInFile(route, code);
+        
+        Process process = Runtime.getRuntime().exec("node "+route);
+        InputStream input = process.getInputStream();
+        InputStream inputError = process.getErrorStream();
+        BufferedInputStream bufferInput = new BufferedInputStream(input);
+        
+        while ((byteRead = bufferInput.read(contents)) != -1) {
+            output += new String(contents, 0, byteRead);
+        }
+        
+        byteRead = 0;
+        contents = new byte[1024];
+        bufferInput = new BufferedInputStream(inputError);
+        
+        while ((byteRead = bufferInput.read(contents)) != -1) {
+            output += new String(contents, 0, byteRead);
+        }
+        
+        return output;
     }
 }

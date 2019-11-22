@@ -179,16 +179,19 @@ public class ForEachStatement extends Statement {
     
     @Override
     public String parse() {
-        String parseo = "";
-        
-        for(Statement child : this.childs){
-            if (child.isLeaf() && ((Lexeme)child).getWord().equals(":")) {
-                parseo += " of ";
-            }else{
-                parseo += child.parse()+" ";
+        if (this.parse == null) {
+            String parseo = "";
+
+            for (Statement child : this.childs) {
+                if (child.isLeaf() && ((Lexeme) child).getWord().equals(":")) {
+                    parseo += " of ";
+                } else {
+                    parseo += child.parse() + " ";
+                }
             }
+
+            return parseo;
         }
-        
-        return parseo;
+        return this.parse;
     }
 }

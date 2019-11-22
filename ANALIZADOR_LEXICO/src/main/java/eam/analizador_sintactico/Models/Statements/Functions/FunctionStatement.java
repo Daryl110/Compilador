@@ -167,18 +167,20 @@ public class FunctionStatement extends Statement {
     public boolean withContext() {
         return true;
     }
-    
+
     @Override
     public String parse() {
-        String parse = "";
-        for(Statement child : this.childs){
-            if (child.isLeaf()) {
-                if (((Lexeme)child).getType().equals(LexemeTypes.DATA_TYPE)
-                        ||((Lexeme)child).getWord().equals("void")) {
-                    continue;
+        if (this.parse == null) {
+            this.parse = "";
+            for (Statement child : this.childs) {
+                if (child.isLeaf()) {
+                    if (((Lexeme) child).getType().equals(LexemeTypes.DATA_TYPE)
+                            || ((Lexeme) child).getWord().equals("void")) {
+                        continue;
+                    }
                 }
+                parse += child.parse() + " ";
             }
-            parse += child.parse()+" ";
         }
         return parse;
     }

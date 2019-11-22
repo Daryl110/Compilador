@@ -223,7 +223,9 @@ public class ArrayExpressionStatement extends Statement {
     
     @Override
     public String parse() {
-        return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
+        if (this.parse == null) {
+            return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
+        }
+        return this.parse;
     }
-
 }

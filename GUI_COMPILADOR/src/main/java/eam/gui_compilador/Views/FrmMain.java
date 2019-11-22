@@ -11,6 +11,7 @@ import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_semantico.Exceptions.SemanticError;
 import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import eam.analizador_sintactico.Models.SyntacticAnalyzer;
+import eam.gui_compilador.util.Tools;
 import java.awt.Font;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,6 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -34,12 +37,15 @@ public class FrmMain extends javax.swing.JFrame {
     private final LexicalAnalyzerController lexAnalyzerController;
     private SyntacticAnalyzer syntacticAnalyzer;
     private SemanticAnalyzerController semanticAnalyzerController;
+    private String routeFile;
 
     /**
      * Creates new form FrmMain
      */
     public FrmMain() {
         initComponents();
+
+        this.routeFile = "";
 
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
         atmf.putMapping("text/solar", "eam.gui_compilador.Models.SolarTokenMaker");
@@ -324,77 +330,44 @@ public class FrmMain extends javax.swing.JFrame {
         JFileChooser filechooser = new JFileChooser(".");
         filechooser.setFileFilter(new FileNameExtensionFilter("solar files (.sol)", "sol"));
         int valueSelection = filechooser.showOpenDialog(this);
-        Scanner input = null;
 
         if (valueSelection == JFileChooser.APPROVE_OPTION) {
-            String fileRoute = filechooser.getSelectedFile().getAbsolutePath();
             try {
-                File file = new File(fileRoute);
-                input = new Scanner(file);
-                while (input.hasNext()) {
-                    this.txtCodeEditor.setText(this.txtCodeEditor.getText() + input.nextLine() + "\n");
-                }
-            } catch (FileNotFoundException e) {
-                System.out.println(e.getMessage());
-            } finally {
-                if (input != null) {
-                    input.close();
-                }
+                String fileRoute = filechooser.getSelectedFile().getAbsolutePath();
+                this.routeFile = fileRoute;
+                this.txtCodeEditor.setText(this.txtCodeEditor.getText() + Tools.readFile(fileRoute));
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error al cargar el archivo " + ex.getMessage());
             }
         }
     }//GEN-LAST:event_btnOpenFileActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        JFileChooser filechooser = new JFileChooser(".");
-        filechooser.setFileFilter(new FileNameExtensionFilter("solar files (.sol)", "sol"));
-        int valueSelection = filechooser.showOpenDialog(this);
-
-        if (valueSelection == JFileChooser.APPROVE_OPTION) {
-            String fileRoute = filechooser.getSelectedFile().getAbsolutePath();
-            FileWriter flwriter = null;
-            try {
-                //crea el flujo para escribir en el archivo
-                flwriter = new FileWriter(fileRoute);
-                
-                flwriter.write(this.txtCodeEditor.getText());
-                
-                //crea un buffer o flujo intermedio antes de escribir directamente en el archivo
-                BufferedWriter bfwriter = new BufferedWriter(flwriter);
-                //cierra el buffer intermedio
-                bfwriter.close();
-                JOptionPane.showMessageDialog(this, "Se ha guardado la información correctamente");
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (flwriter != null) {
-                    try {//cierra el flujo principal
-                        flwriter.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+        this.saveCode();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalyzeActionPerformed
+        if (this.routeFile.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Debe guardar el codigo antes de ejecutarlo");
+            return;
+        }
         this.tblLexemes.setModel(this.lexAnalyzerController.analyze(this.txtCodeEditor.getText().replaceAll("\t", "")));
         try {
             this.syntacticAnalyzer = new SyntacticAnalyzer(LexicalAnalyzerController.lexemes);
             Statement compilationUnit = this.syntacticAnalyzer.analyze();
             this.trLexemes.setModel(new DefaultTreeModel(compilationUnit));
             this.semanticAnalyzerController = new SemanticAnalyzerController(compilationUnit);
-            try{
+            try {
                 this.semanticAnalyzerController.analyze();
                 this.tblVariables.setModel(this.semanticAnalyzerController.getVariables());
                 this.tblFuntions.setModel(this.semanticAnalyzerController.getFunctions());
-            }catch(SemanticError | SyntaxError e){
+                this.saveCode();
+                this.txtOutput.setText(this.txtOutput.getText() + this.semanticAnalyzerController.execute(Tools.changeExtFile(this.routeFile, ".sol", ".js")));
+            } catch (SemanticError | SyntaxError | IOException e) {
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }
-            
-            System.out.println(this.semanticAnalyzerController.parsear());
-        }catch(SyntaxError e){
+
+        } catch (SyntaxError e) {
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
     }//GEN-LAST:event_btnAnalyzeActionPerformed
@@ -425,4 +398,31 @@ public class FrmMain extends javax.swing.JFrame {
     private org.fife.ui.rsyntaxtextarea.RSyntaxTextArea txtCodeEditor;
     private javax.swing.JTextArea txtOutput;
     // End of variables declaration//GEN-END:variables
+
+    private void saveCode() {
+        JFileChooser filechooser = new JFileChooser(".");
+        filechooser.setFileFilter(new FileNameExtensionFilter("solar files (.sol)", "sol"));
+        int valueSelection = JFileChooser.APPROVE_OPTION;
+
+        String fileRoute = "";
+
+        if (this.routeFile.isEmpty()) {
+            valueSelection = filechooser.showOpenDialog(this);
+        } else {
+            fileRoute = this.routeFile;
+        }
+
+        if (valueSelection == JFileChooser.APPROVE_OPTION) {
+            if (fileRoute.isEmpty()) {
+                fileRoute = filechooser.getSelectedFile().getAbsolutePath();
+            }
+            this.routeFile = fileRoute;
+            try {
+                Tools.writeInFile(fileRoute, this.txtCodeEditor.getText());
+                JOptionPane.showMessageDialog(this, "Se ha guardado el codigo correctamente");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error al guardar el codigo " + ex.getMessage());
+            }
+        }
+    }
 }

@@ -29,6 +29,7 @@ import javax.swing.tree.TreeNode;
 public abstract class Statement implements TreeNode {
 
     protected int positionBack = -1;
+    public String parse;
 
     public Statement(Statement root) {
         this.root = root;
@@ -156,6 +157,8 @@ public abstract class Statement implements TreeNode {
                     var.setDataType(lexeme);
                 } else if (lexeme.getType().equals(LexemeTypes.IDENTIFIERS)) {
                     var.setIdentifier(lexeme);
+                } else if (lexeme.getWord().equals("null") || lexeme.getWord().equals("NaN")) {
+                    var.setValue(lexeme);
                 }
             } else if (grandChild.withContext()) {
                 if (var.getIdentifier() != null) {
@@ -243,6 +246,8 @@ public abstract class Statement implements TreeNode {
         Context contextFunction = new Context(rootContext, child);
         Function function = new Function(contextFunction);
         int auxCont = 0;
+        ReturnStatement returnStatement = null;
+        Lexeme returnType = null;
         for (Statement grandChild : child.childs) {
             if (grandChild.isLeaf()) {
                 Lexeme lexeme = ((Lexeme) (grandChild));
@@ -250,29 +255,13 @@ public abstract class Statement implements TreeNode {
                         || (lexeme.getType().equals(LexemeTypes.FUNCTIONS)
                         && lexeme.getWord().equals("void"))) {
                     function.setReturnType(lexeme);
-                    ReturnStatement returnStatement = null;
                     for (Statement grandChild1 : child.childs) {
                         if (grandChild1.toString().equals(SyntacticTypes.RETURN_STATEMENT)) {
                             returnStatement = (ReturnStatement) grandChild1;
                             break;
                         }
                     }
-
-                    if (returnStatement != null && !lexeme.getWord().equals("void")) {
-                        this.validateDataTypeStatement(returnStatement.getReturnValue(), lexeme, child, rootContext,
-                                "el tipo de retorno "
-                                + lexeme.getWord() + " de la funcion "
-                                + ((Lexeme) child.childs.get(2)).getWord()
-                                + " no coincide con el valor de una "
-                                + returnStatement.getReturnValue().toString() + "\nen la posicion "
-                                + lexeme.getRow() + ":" + lexeme.getColumn());
-                    } else if (returnStatement != null && lexeme.getWord().equals("void")) {
-                        throw new SemanticError("La funcion con el nombre " + ((Lexeme) child.childs.get(2)).getWord() + " tiene un tipo de retorno void y tiene una sentencia de retorno "
-                                + "\nen la posicion " + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getRow() + ":" + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getColumn());
-                    } else if (returnStatement == null && !lexeme.getWord().equals("void")) {
-                        throw new SemanticError("La funcion con el nombre " + ((Lexeme) child.childs.get(2)).getWord() + " no tiene una sentencia de retorno "
-                                + "\nen la posicion " + ((Lexeme) child.childs.get(2)).getRow() + ":" + ((Lexeme) child.childs.get(2)).getColumn());
-                    }
+                    returnType = lexeme;
                 } else if (lexeme.getType().equals(LexemeTypes.IDENTIFIERS)) {
                     function.setIdentifier(lexeme);
                 } else if (lexeme.getType().equals(LexemeTypes.OPEN_PARENTHESIS)) {
@@ -301,6 +290,41 @@ public abstract class Statement implements TreeNode {
                             break;
                         }
                     }
+
+                    rootContext.addFunction(function);
+                    rootContext.addChildContext(child.generateContext(rootContext, contextFunction));
+
+                    if (returnStatement != null && returnType != null && !returnType.getWord().equals("void")) {
+                        if (returnStatement.getReturnValue().toString().equals(SyntacticTypes.NUMERIC_EXPRESSION_STATEMENT)) {
+                            if (returnStatement.getReturnValue().getChildCount() == 1) {
+                                if (returnStatement.getReturnValue().getChildAt(0).isLeaf()
+                                        && ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getType().equals(LexemeTypes.IDENTIFIERS)) {
+                                    Variable var = contextFunction.getVariable(((Lexeme) returnStatement.getReturnValue().getChildAt(0)));
+                                    this.validateDataTypeStatement(var.getValue(), returnType, child, rootContext,
+                                            "el tipo de retorno "
+                                            + returnType.getWord() + " de la funcion "
+                                            + ((Lexeme) child.childs.get(2)).getWord()
+                                            + " no coincide con el valor de una "
+                                            + (var.getValue().isLeaf() ? ((Lexeme) var.getValue()).getWord() : var.getValue().toString()) + "\nen la posicion "
+                                            + ((Lexeme) child.childs.get(2)).getRow() + ":" + ((Lexeme) child.childs.get(2)).getColumn());
+                                }
+                            }
+                        }
+                        this.validateDataTypeStatement(returnStatement.getReturnValue(), returnType, child, rootContext,
+                                "el tipo de retorno "
+                                + returnType.getWord() + " de la funcion "
+                                + ((Lexeme) child.childs.get(2)).getWord()
+                                + " no coincide con el valor de una "
+                                + returnStatement.getReturnValue().toString() + "\nen la posicion "
+                                + ((Lexeme) child.childs.get(2)).getRow() + ":" + ((Lexeme) child.childs.get(2)).getColumn());
+                    } else if (returnStatement != null && returnType != null && returnType.getWord().equals("void")) {
+                        throw new SemanticError("La funcion con el nombre " + ((Lexeme) child.childs.get(2)).getWord() + " tiene un tipo de retorno void y tiene una sentencia de retorno "
+                                + "\nen la posicion " + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getRow() + ":" + ((Lexeme) returnStatement.getReturnValue().getChildAt(0)).getColumn());
+                    } else if (returnStatement == null && returnType != null && !returnType.getWord().equals("void")) {
+                        throw new SemanticError("La funcion con el nombre " + ((Lexeme) child.childs.get(2)).getWord() + " no tiene una sentencia de retorno "
+                                + "\nen la posicion " + ((Lexeme) child.childs.get(2)).getRow() + ":" + ((Lexeme) child.childs.get(2)).getColumn());
+                    }
+
                     break;
                 }
             }
@@ -309,8 +333,6 @@ public abstract class Statement implements TreeNode {
                 break;
             }
         }
-        rootContext.addFunction(function);
-        rootContext.addChildContext(child.generateContext(rootContext, contextFunction));
     }
 
     private void validateCreateVariableInForEach(Statement child, Context rootContext) {
@@ -420,17 +442,25 @@ public abstract class Statement implements TreeNode {
                                         + "\nen la posicion " + func.getIdentifier().getRow() + ":" + func.getIdentifier().getColumn());
                             }
                             if (varIdentifier.getChildCount() == 1 && varIdentifier.getChildAt(0).isLeaf()) {
-                                if (((Lexeme)varIdentifier.getChildAt(0)).getType().equals(LexemeTypes.IDENTIFIERS)) {
-                                    Variable var = rootContext.getVariable(((Lexeme)varIdentifier.getChildAt(0)));
+                                if (((Lexeme) varIdentifier.getChildAt(0)).getType().equals(LexemeTypes.IDENTIFIERS)) {
+                                    Variable var = rootContext.getVariable(((Lexeme) varIdentifier.getChildAt(0)));
+                                    if (identifier.getWord().equals("log")) {
+                                        func.getContext().getStatement().parse = "";
+                                        invokeFunctionStatement.parse = "console.log(" + var.getIdentifier().getWord() + ");";
+                                    }
                                     this.validateDataTypeStatement(var.getValue(), func.getParameters().get(aux).getDataType(), child, rootContext,
-                                    "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()
-                                    + " es de tipo " + func.getParameters().get(aux).getDataType().getWord()
-                                    + " y el valor que se le esta enviando es de tipo "
-                                    + var.getDataType().getWord()
-                                    + " en la posicion " + identifier.getRow() + ":" + identifier.getColumn());
+                                            "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()
+                                            + " es de tipo " + func.getParameters().get(aux).getDataType().getWord()
+                                            + " y el valor que se le esta enviando es de tipo "
+                                            + var.getDataType().getWord()
+                                            + " en la posicion " + identifier.getRow() + ":" + identifier.getColumn());
                                     aux++;
                                     continue;
                                 }
+                            }
+                            if (identifier.getWord().equals("log")) {
+                                func.getContext().getStatement().parse = "";
+                                invokeFunctionStatement.parse = "console.log(" + varIdentifier.parse() + ");";
                             }
                             this.validateDataTypeStatement(varIdentifier, func.getParameters().get(aux).getDataType(), child, rootContext,
                                     "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()

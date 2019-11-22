@@ -13,7 +13,7 @@ import eam.analizador_sintactico.Models.Statements.Structure.Statement;
  * @author Daryl Ospina
  */
 public class Lexeme extends Statement {
-    
+
     private int row;
     private int column;
     private String word;
@@ -34,7 +34,7 @@ public class Lexeme extends Statement {
         this.word = word;
         this.type = type;
     }
-    
+
     public Lexeme(int row, int column, String word, String type) {
         super(null, -1);
         this.row = row;
@@ -77,7 +77,7 @@ public class Lexeme extends Statement {
 
     @Override
     public String toString() {
-        return "{ token: "+this.word+", tipo: "+this.type+", posicion: { row: "+this.row+", column: "+this.column+" } }";
+        return "{ token: " + this.word + ", tipo: " + this.type + ", posicion: { row: " + this.row + ", column: " + this.column + " } }";
     }
 
     @Override
@@ -92,10 +92,13 @@ public class Lexeme extends Statement {
 
     @Override
     public String parse() {
-        if (this.type.equals(LexemeTypes.DATA_TYPE)) {
-            return "var";
+        if (this.parse == null) {
+            if (this.type.equals(LexemeTypes.DATA_TYPE)) {
+                return "var";
+            }
+            return this.word;
         }
-        return this.word;
+        return this.parse;
     }
-    
+
 }

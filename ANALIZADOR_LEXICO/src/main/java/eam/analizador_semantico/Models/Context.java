@@ -11,6 +11,7 @@ import eam.analizador_sintactico.Models.Statements.Structure.Statement;
 import eam.analizador_semantico.Exceptions.SemanticError;
 import eam.analizador_sintactico.Models.Statements.Assignment.OthersAssignmentsStatement;
 import eam.analizador_sintactico.Models.Statements.Assignment.SimpleAssignmentStatement;
+import eam.analizador_sintactico.Models.Statements.Expressions.ArrayExpressionStatement;
 import eam.analizador_sintactico.Models.Statements.Expressions.NumericExpressionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.FunctionStatement;
 import eam.analizador_sintactico.Models.Statements.Functions.InvokeFunctionStatement;
@@ -44,8 +45,11 @@ public class Context {
     }
     
     public void addDefaultFunctions(){
-       this.addLogFunction();
+       this.addPowFunction();
        this.addSumFunction();
+       this.addAddFunction();
+       this.addRemoveFunction();
+       this.addLogFunction();
     }
     
     private void addSumFunction(){
@@ -93,7 +97,6 @@ public class Context {
         
         assignment2.addChild(new Lexeme(-1, -1, "suma", LexemeTypes.IDENTIFIERS));
         assignment2.addChild(new Lexeme(-1, -1, "+=", LexemeTypes.ASSIGNMENT_OPERATORS));
-        assignment2.addChild(new Lexeme(-1, -1, "", LexemeTypes.ASSIGNMENT_OPERATORS));
         
         numericExpression2.addChild(new Lexeme(-1, -1, "item", LexemeTypes.IDENTIFIERS));
         
@@ -135,8 +138,167 @@ public class Context {
         log.addChild(paramStatement);
         log.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
         log.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        log.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
         
         this.statement.getChilds().add(0, log);
+    }
+    
+    private void addAddFunction(){
+        Statement add = new FunctionStatement(this.statement);
+        Statement paramStatement = new ParameterStatement(add);
+        Statement paramStatement1 = new ParameterStatement(add);
+        
+        add.addChild(new Lexeme(-1, -1, "function", LexemeTypes.FUNCTIONS));
+        add.addChild(new Lexeme(-1, -1, "void", LexemeTypes.FUNCTIONS));
+        add.addChild(new Lexeme(-1, -1, "add", LexemeTypes.IDENTIFIERS));
+        add.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        
+        paramStatement1.addChild(new Lexeme(-1, -1, "Array", LexemeTypes.DATA_TYPE));
+        paramStatement1.addChild(new Lexeme(-1, -1, "array", LexemeTypes.IDENTIFIERS));
+        add.addChild(paramStatement1);
+        
+        add.addChild(new Lexeme(-1, -1, ",", LexemeTypes.OTHERS));
+        
+        paramStatement.addChild(new Lexeme(-1, -1, "any", LexemeTypes.DATA_TYPE));
+        paramStatement.addChild(new Lexeme(-1, -1, "item", LexemeTypes.IDENTIFIERS));
+        add.addChild(paramStatement);
+        
+        add.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        add.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        add.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
+        
+        this.statement.getChilds().add(0, add);
+    }
+    
+    private void addRemoveFunction(){
+        Statement remove = new FunctionStatement(this.statement);
+        Statement paramStatement1 = new ParameterStatement(remove);
+        ReturnStatement returnStatement = new ReturnStatement(remove);
+        Statement numericExpression3 = new NumericExpressionStatement(returnStatement);
+        
+        remove.addChild(new Lexeme(-1, -1, "function", LexemeTypes.FUNCTIONS));
+        remove.addChild(new Lexeme(-1, -1, "any", LexemeTypes.DATA_TYPE));
+        remove.addChild(new Lexeme(-1, -1, "remove", LexemeTypes.IDENTIFIERS));
+        remove.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        
+        paramStatement1.addChild(new Lexeme(-1, -1, "Array", LexemeTypes.DATA_TYPE));
+        paramStatement1.addChild(new Lexeme(-1, -1, "array", LexemeTypes.IDENTIFIERS));
+        remove.addChild(paramStatement1);
+        
+        remove.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        remove.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        
+        returnStatement.addChild(new Lexeme(-1, -1, "return", LexemeTypes.FUNCTIONS));
+        
+        numericExpression3.addChild(new Lexeme(-1, -1, "1", LexemeTypes.NUMBERS));
+        
+        returnStatement.addChild(numericExpression3);
+        returnStatement.setReturnValue(numericExpression3);
+        returnStatement.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        remove.addChild(returnStatement);
+        remove.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
+        
+        this.statement.getChilds().add(0, remove);
+    }
+    
+    private void addPowFunction(){
+        
+        Statement pow = new FunctionStatement(this.statement);
+        Statement paramStatement = new ParameterStatement(pow);
+        Statement paramStatement1 = new ParameterStatement(pow);
+        Statement forEachStatement = new ForEachStatement(pow);
+        Statement assignment = new SimpleAssignmentStatement(forEachStatement);
+        Statement numericExpression = new NumericExpressionStatement(assignment);
+        ReturnStatement returnStatement = new ReturnStatement(pow);
+        Statement numericExpression1 = new NumericExpressionStatement(returnStatement);
+        Statement invokeFunctionAdd = new InvokeFunctionStatement(pow);
+        Statement numericExpression2 = new NumericExpressionStatement(invokeFunctionAdd);
+        Statement numericExpression3 = new NumericExpressionStatement(invokeFunctionAdd);
+        Statement assignment1 = new SimpleAssignmentStatement(pow);
+        Statement arrayExpression = new ArrayExpressionStatement(assignment1);
+        
+        pow.addChild(new Lexeme(-1, -1, "function", LexemeTypes.FUNCTIONS));
+        pow.addChild(new Lexeme(-1, -1, "Array", LexemeTypes.DATA_TYPE));
+        pow.addChild(new Lexeme(-1, -1, "pow", LexemeTypes.IDENTIFIERS));
+        pow.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        
+        paramStatement.addChild(new Lexeme(-1, -1, "number", LexemeTypes.DATA_TYPE));
+        paramStatement.addChild(new Lexeme(-1, -1, "i", LexemeTypes.IDENTIFIERS));
+        pow.addChild(paramStatement);
+        
+        pow.addChild(new Lexeme(-1, -1, ",", LexemeTypes.OTHERS));
+        
+        paramStatement1.addChild(new Lexeme(-1, -1, "Array", LexemeTypes.DATA_TYPE));
+        paramStatement1.addChild(new Lexeme(-1, -1, "array", LexemeTypes.IDENTIFIERS));
+        pow.addChild(paramStatement1);
+        
+        pow.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        pow.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        
+        assignment1.addChild(new Lexeme(-1, -1, "Array", LexemeTypes.DATA_TYPE));
+        assignment1.addChild(new Lexeme(-1, -1, "array2", LexemeTypes.IDENTIFIERS));
+        assignment1.addChild(new Lexeme(-1, -1, "=", LexemeTypes.ASSIGNMENT_OPERATORS));
+        
+        arrayExpression.addChild(new Lexeme(-1, -1, "[", LexemeTypes.OPEN_BRACKETS));
+        arrayExpression.addChild(new Lexeme(-1, -1, "]", LexemeTypes.CLOSE_BRACKETS));
+        
+        assignment1.addChild(arrayExpression);
+        assignment1.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        pow.addChild(assignment1);
+        
+        forEachStatement.addChild(new Lexeme(-1, -1, "for", LexemeTypes.ITERATIVE_CONTROL_STRUCTURE));
+        forEachStatement.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        forEachStatement.addChild(new Lexeme(-1, -1, "any", LexemeTypes.DATA_TYPE));
+        forEachStatement.addChild(new Lexeme(-1, -1, "item", LexemeTypes.IDENTIFIERS));
+        forEachStatement.addChild(new Lexeme(-1, -1, ":", LexemeTypes.OTHERS));
+        forEachStatement.addChild(new Lexeme(-1, -1, "array", LexemeTypes.IDENTIFIERS));
+        forEachStatement.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        forEachStatement.addChild(new Lexeme(-1, -1, "{", LexemeTypes.OPEN_BRACES));
+        
+        assignment.addChild(new Lexeme(-1, -1, "item", LexemeTypes.IDENTIFIERS));
+        assignment.addChild(new Lexeme(-1, -1, "^=", LexemeTypes.ASSIGNMENT_OPERATORS));
+        
+        numericExpression.addChild(new Lexeme(-1, -1, "i", LexemeTypes.IDENTIFIERS));
+        
+        assignment.addChild(numericExpression);
+        assignment.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        forEachStatement.addChild(assignment);
+        
+        invokeFunctionAdd.addChild(new Lexeme(-1, -1, "add", LexemeTypes.IDENTIFIERS));
+        invokeFunctionAdd.addChild(new Lexeme(-1, -1, "(", LexemeTypes.OPEN_PARENTHESIS));
+        
+        numericExpression3.addChild(new Lexeme(-1, -1, "array", LexemeTypes.IDENTIFIERS));
+        invokeFunctionAdd.addChild(numericExpression3);
+        
+        invokeFunctionAdd.addChild(new Lexeme(-1, -1, ",", LexemeTypes.OTHERS));
+        
+        numericExpression2.addChild(new Lexeme(-1, -1, "item", LexemeTypes.IDENTIFIERS));
+        invokeFunctionAdd.addChild(numericExpression2);
+        
+        invokeFunctionAdd.addChild(new Lexeme(-1, -1, ")", LexemeTypes.CLOSE_PARENTHESIS));
+        
+        forEachStatement.addChild(invokeFunctionAdd);
+        forEachStatement.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        forEachStatement.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
+        
+        pow.addChild(forEachStatement);
+        
+        returnStatement.addChild(new Lexeme(-1, -1, "return", LexemeTypes.FUNCTIONS));
+        
+        numericExpression1.addChild(new Lexeme(-1, -1, "array2", LexemeTypes.IDENTIFIERS));
+        
+        returnStatement.addChild(numericExpression1);
+        returnStatement.setReturnValue(numericExpression1);
+        returnStatement.addChild(new Lexeme(-1, -1, ";", LexemeTypes.DELIMITERS));
+        
+        pow.addChild(returnStatement);
+        pow.addChild(new Lexeme(-1, -1, "}", LexemeTypes.CLOSE_BRACES));
+        
+        this.statement.getChilds().add(0, pow);
     }
 
     public Context(Context parent, Statement statement) {

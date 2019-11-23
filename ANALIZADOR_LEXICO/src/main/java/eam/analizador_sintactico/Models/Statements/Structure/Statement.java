@@ -307,6 +307,7 @@ public abstract class Statement implements TreeNode {
                                             + " no coincide con el valor de una "
                                             + (var.getValue().isLeaf() ? ((Lexeme) var.getValue()).getWord() : var.getValue().toString()) + "\nen la posicion "
                                             + ((Lexeme) child.childs.get(2)).getRow() + ":" + ((Lexeme) child.childs.get(2)).getColumn());
+                                    break;
                                 }
                             }
                         }
@@ -447,6 +448,14 @@ public abstract class Statement implements TreeNode {
                                     if (identifier.getWord().equals("log")) {
                                         func.getContext().getStatement().parse = "";
                                         invokeFunctionStatement.parse = "console.log(" + var.getIdentifier().getWord() + ");";
+                                    } else if (identifier.getWord().equals("add") && aux == 0) {
+                                        func.getContext().getStatement().parse = "";
+                                        invokeFunctionStatement.parse = var.getIdentifier().getWord() + ".push(";
+                                    } else if (identifier.getWord().equals("add") && aux == 1) {
+                                        invokeFunctionStatement.parse += var.getIdentifier().getWord() + ");";
+                                    } else if (identifier.getWord().equals("remove")) {
+                                        func.getContext().getStatement().parse = "";
+                                        invokeFunctionStatement.parse = var.getIdentifier().getWord() + ".pop()";
                                     }
                                     this.validateDataTypeStatement(var.getValue(), func.getParameters().get(aux).getDataType(), child, rootContext,
                                             "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()
@@ -461,6 +470,14 @@ public abstract class Statement implements TreeNode {
                             if (identifier.getWord().equals("log")) {
                                 func.getContext().getStatement().parse = "";
                                 invokeFunctionStatement.parse = "console.log(" + varIdentifier.parse() + ");";
+                            } else if (identifier.getWord().equals("add") && aux == 0) {
+                                func.getContext().getStatement().parse = "";
+                                invokeFunctionStatement.parse = varIdentifier.parse() + ".push(";
+                            } else if (identifier.getWord().equals("add") && aux == 1) {
+                                invokeFunctionStatement.parse += varIdentifier.parse() + ");";
+                            } else if (identifier.getWord().equals("remove")) {
+                                func.getContext().getStatement().parse = "";
+                                invokeFunctionStatement.parse = varIdentifier.parse() + ".pop()";
                             }
                             this.validateDataTypeStatement(varIdentifier, func.getParameters().get(aux).getDataType(), child, rootContext,
                                     "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()

@@ -96,6 +96,10 @@ public class Lexeme extends Statement {
             if (this.type.equals(LexemeTypes.DATA_TYPE)) {
                 return "var";
             }
+            if (this.type.equals(LexemeTypes.ASSIGNMENT_OPERATORS)
+                    && this.word.equals("^=")) {
+                return "**=";
+            }
             return this.word;
         }
         return this.parse;

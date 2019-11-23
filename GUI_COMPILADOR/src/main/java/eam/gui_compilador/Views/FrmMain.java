@@ -13,14 +13,7 @@ import eam.analizador_sintactico.Models.Exceptions.SyntaxError;
 import eam.analizador_sintactico.Models.SyntacticAnalyzer;
 import eam.gui_compilador.util.Tools;
 import java.awt.Font;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -87,7 +80,8 @@ public class FrmMain extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         tblFuntions = new javax.swing.JTable();
         jPanel7 = new javax.swing.JPanel();
-        jScrollPane4 = new javax.swing.JScrollPane();
+        btnClean = new javax.swing.JButton();
+        jScrollPane6 = new javax.swing.JScrollPane();
         txtOutput = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -286,22 +280,21 @@ public class FrmMain extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Analizador Semantico", jPanel3);
 
-        txtOutput.setEditable(false);
-        txtOutput.setColumns(20);
-        txtOutput.setLineWrap(true);
-        txtOutput.setRows(5);
-        jScrollPane4.setViewportView(txtOutput);
+        jPanel7.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
-        jPanel7.setLayout(jPanel7Layout);
-        jPanel7Layout.setHorizontalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4)
-        );
-        jPanel7Layout.setVerticalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4)
-        );
+        btnClean.setText("Limpiar");
+        btnClean.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCleanActionPerformed(evt);
+            }
+        });
+        jPanel7.add(btnClean, new org.netbeans.lib.awtextra.AbsoluteConstraints(753, 10, 180, -1));
+
+        txtOutput.setColumns(20);
+        txtOutput.setRows(5);
+        jScrollPane6.setViewportView(txtOutput);
+
+        jPanel7.add(jScrollPane6, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 940, 530));
 
         jTabbedPane1.addTab("OUTPUT", jPanel7);
 
@@ -343,13 +336,13 @@ public class FrmMain extends javax.swing.JFrame {
     }//GEN-LAST:event_btnOpenFileActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        this.saveCode();
+        this.saveCode("Se ha guardado el codigo correctamente", "Error al guardar el codigo ");
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalyzeActionPerformed
         if (this.routeFile.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Debe guardar el codigo antes de ejecutarlo");
-            return;
+            this.saveCode("Se ha guardado el codigo correctamente", "Error al guardar el codigo ");
         }
         this.tblLexemes.setModel(this.lexAnalyzerController.analyze(this.txtCodeEditor.getText().replaceAll("\t", "")));
         try {
@@ -361,19 +354,24 @@ public class FrmMain extends javax.swing.JFrame {
                 this.semanticAnalyzerController.analyze();
                 this.tblVariables.setModel(this.semanticAnalyzerController.getVariables());
                 this.tblFuntions.setModel(this.semanticAnalyzerController.getFunctions());
-                this.saveCode();
                 this.txtOutput.setText(this.txtOutput.getText() + this.semanticAnalyzerController.execute(Tools.changeExtFile(this.routeFile, ".sol", ".js")));
+                JOptionPane.showMessageDialog(this, "Codigo ejecutado correctamente!!!");
             } catch (SemanticError | SyntaxError | IOException e) {
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }
-
+            this.saveCode(null, null);
         } catch (SyntaxError e) {
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
     }//GEN-LAST:event_btnAnalyzeActionPerformed
 
+    private void btnCleanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCleanActionPerformed
+        this.txtOutput.setText("");
+    }//GEN-LAST:event_btnCleanActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAnalyze;
+    private javax.swing.JButton btnClean;
     private javax.swing.JButton btnOpenFile;
     private javax.swing.JButton btnSave;
     private javax.swing.JPanel jPanel1;
@@ -385,8 +383,8 @@ public class FrmMain extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JPanel pnlContainer;
     private javax.swing.JPanel pnlEditorContainer;
@@ -399,7 +397,7 @@ public class FrmMain extends javax.swing.JFrame {
     private javax.swing.JTextArea txtOutput;
     // End of variables declaration//GEN-END:variables
 
-    private void saveCode() {
+    private void saveCode(String mensajeExito, String mensajeError) {
         JFileChooser filechooser = new JFileChooser(".");
         filechooser.setFileFilter(new FileNameExtensionFilter("solar files (.sol)", "sol"));
         int valueSelection = JFileChooser.APPROVE_OPTION;
@@ -419,9 +417,13 @@ public class FrmMain extends javax.swing.JFrame {
             this.routeFile = fileRoute;
             try {
                 Tools.writeInFile(fileRoute, this.txtCodeEditor.getText());
-                JOptionPane.showMessageDialog(this, "Se ha guardado el codigo correctamente");
+                if (mensajeExito != null) {
+                    JOptionPane.showMessageDialog(this, mensajeExito);
+                }
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Error al guardar el codigo " + ex.getMessage());
+                if (mensajeError != null) {
+                    JOptionPane.showMessageDialog(this, mensajeError + ex.getMessage());
+                }
             }
         }
     }

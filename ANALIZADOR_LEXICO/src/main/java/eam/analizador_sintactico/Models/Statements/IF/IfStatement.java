@@ -173,7 +173,7 @@ public class IfStatement extends Statement {
     @Override
     public String parse() {
         if (this.parse == null) {
-            return this.childs.stream().map((child) -> child.parse()+"\n").reduce("", String::concat);
+            return this.childs.stream().map((child) -> child.parse()+" ").reduce("", String::concat);
         }
         return this.parse;
     }

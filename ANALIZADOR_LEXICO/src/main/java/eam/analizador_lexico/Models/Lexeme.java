@@ -100,6 +100,10 @@ public class Lexeme extends Statement {
                     && this.word.equals("^=")) {
                 return "**=";
             }
+            if(this.type.equals(LexemeTypes.ARITHMETIC_OPERATORS)
+                    && this.word.equals("^")){
+                return "**";
+            }
             return this.word;
         }
         return this.parse;

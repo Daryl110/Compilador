@@ -1,5 +1,5 @@
 /*
- * Generated on 11/7/19 12:21 PM
+ * Generated on 11/23/19 9:42 AM
  */
 package eam.gui_compilador.Models;
 
@@ -89,7 +89,7 @@ import org.fife.ui.rsyntaxtextarea.*;
 	 * {@inheritDoc}
 	 */
 	public String[] getLineCommentStartAndEnd(int languageIndex) {
-		return new String[] { "//", null };
+		return null;
 	}
 
 
@@ -196,14 +196,14 @@ IdentifierPart						= ({IdentifierStart}|{Digit}|("\\"{EscapedSourceCharacter}))
 LineTerminator				= (\n)
 WhiteSpace				= ([ \t\f]+)
 
-/* No char macros */
+/* No char literals */
 /* No string macros */
 
-MLCBegin					= "/*"
-MLCEnd					= "*/"
+MLCBegin					= "~"
+MLCEnd					= "~"
 
 /* No documentation comments */
-LineCommentBegin			= "//"
+/* No line comments */
 
 IntegerLiteral			= ({Digit}+)
 /* No hex literals */
@@ -226,10 +226,10 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 
 
 %state STRING
-%state CHAR
+/* No char state */
 %state MLC
 /* No documentation comment state */
-%state EOL_COMMENT
+/* No line comment state */
 
 %%
 
@@ -250,6 +250,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "return" |
 "switch" |
 "until" |
+"void" |
 "while"		{ addToken(Token.RESERVED_WORD); }
 
 	/* Keywords 2 (just an optional set of keywords colored differently) */
@@ -263,25 +264,11 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "string"		{ addToken(Token.DATA_TYPE); }
 
 	/* Functions */
-	".add" |
-".duplicate" |
-".intersection" |
-".max" |
-".min" |
-".orderByAsc" |
-".orderByDesc" |
-".poliferation" |
-".pop" |
-".pow" |
-".remove" |
-".reverse" |
-".size" |
-".slicing" |
-".strain" |
-".substract" |
-".sum" |
-".union" |
-"System.log"		{ addToken(Token.FUNCTION); }
+	"add" |
+"log" |
+"pow" |
+"remove" |
+"sum"		{ addToken(Token.FUNCTION); }
 
 	{BooleanLiteral}			{ addToken(Token.LITERAL_BOOLEAN); }
 
@@ -292,13 +279,13 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 	{WhiteSpace}					{ addToken(Token.WHITESPACE); }
 
 	/* String/Character literals. */
-	'							{ start = zzMarkedPos-1; yybegin(CHAR); }
+	/* No char literals */
 	\"							{ start = zzMarkedPos-1; yybegin(STRING); }
 
 	/* Comment literals. */
-	{MLCBegin}	{ start = zzMarkedPos-2; yybegin(MLC); }
+	{MLCBegin}	{ start = zzMarkedPos-1; yybegin(MLC); }
 	/* No documentation comments */
-	{LineCommentBegin}			{ start = zzMarkedPos-2; yybegin(EOL_COMMENT); }
+	/* No line comments */
 
 	/* Separators. */
 	{Separator}					{ addToken(Token.SEPARATOR); }
@@ -306,11 +293,11 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 
 	/* Operators. */
 	"!" |
+"!=" |
 "%" |
 "%=" |
 "&&" |
 "*" |
-"**" |
 "*=" |
 "+" |
 "++" |
@@ -322,14 +309,13 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "/" |
 "/=" |
 ":" |
-";" |
 "<" |
 "<=" |
 "=" |
 "==" |
 ">" |
 ">=" |
-"^" |
+"^=" |
 "||"		{ addToken(Token.OPERATOR); }
 
 	/* Numbers */
@@ -347,12 +333,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 }
 
 
-<CHAR> {
-	[^\']*						{}
-	[\']						{ yybegin(YYINITIAL); addToken(start,zzStartRead, Token.LITERAL_CHAR); }
-	<<EOF>>						{ addToken(start,zzStartRead-1, Token.LITERAL_CHAR); return firstToken; }
-}
-
+/* No char state */
 
 <STRING> {
 	[^\"]*						{}
@@ -363,13 +344,13 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 
 <MLC> {
 
-	[^hwf\n*]+				{}
+	[^hwf\n~]+				{}
 	{URL}					{ int temp=zzStartRead; addToken(start,zzStartRead-1, Token.COMMENT_MULTILINE); addHyperlinkToken(temp,zzMarkedPos-1, Token.COMMENT_MULTILINE); start = zzMarkedPos; }
 	[hwf]					{}
 
 	\n						{ addToken(start,zzStartRead-1, Token.COMMENT_MULTILINE); return firstToken; }
-	{MLCEnd}					{ yybegin(YYINITIAL); addToken(start,zzStartRead+2-1, Token.COMMENT_MULTILINE); }
-	"*"						{}
+	{MLCEnd}					{ yybegin(YYINITIAL); addToken(start,zzStartRead+1-1, Token.COMMENT_MULTILINE); }
+	"~"						{}
 	<<EOF>>					{ addToken(start,zzStartRead-1, Token.COMMENT_MULTILINE); return firstToken; }
 
 }
@@ -377,11 +358,4 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 
 /* No documentation comment state */
 
-<EOL_COMMENT> {
-	[^hwf\n]+				{}
-	{URL}					{ int temp=zzStartRead; addToken(start,zzStartRead-1, Token.COMMENT_EOL); addHyperlinkToken(temp,zzMarkedPos-1, Token.COMMENT_EOL); start = zzMarkedPos; }
-	[hwf]					{}
-	\n						{ addToken(start,zzStartRead-1, Token.COMMENT_EOL); addNullToken(); return firstToken; }
-	<<EOF>>					{ addToken(start,zzStartRead-1, Token.COMMENT_EOL); addNullToken(); return firstToken; }
-}
-
+/* No line comment state */

@@ -455,7 +455,7 @@ public abstract class Statement implements TreeNode {
                                         invokeFunctionStatement.parse += var.getIdentifier().getWord() + ");";
                                     } else if (identifier.getWord().equals("remove")) {
                                         func.getContext().getStatement().parse = "";
-                                        invokeFunctionStatement.parse = var.getIdentifier().getWord() + ".pop()";
+                                        invokeFunctionStatement.parse = var.getIdentifier().getWord() + ".pop();";
                                     }
                                     this.validateDataTypeStatement(var.getValue(), func.getParameters().get(aux).getDataType(), child, rootContext,
                                             "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()
@@ -477,7 +477,7 @@ public abstract class Statement implements TreeNode {
                                 invokeFunctionStatement.parse += varIdentifier.parse() + ");";
                             } else if (identifier.getWord().equals("remove")) {
                                 func.getContext().getStatement().parse = "";
-                                invokeFunctionStatement.parse = varIdentifier.parse() + ".pop()";
+                                invokeFunctionStatement.parse = varIdentifier.parse() + ".pop();";
                             }
                             this.validateDataTypeStatement(varIdentifier, func.getParameters().get(aux).getDataType(), child, rootContext,
                                     "El parametro numero " + (aux + 1) + " requerido para la funcion " + func.getIdentifier().getWord()
